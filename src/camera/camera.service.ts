@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Logger, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 import '../extension';
@@ -9,6 +9,7 @@ import { Camera, ImagePtr } from './camera.bo';
 
 @Injectable()
 export class CameraService {
+  private readonly logger = new Logger(CameraService.name);
   private detectCamType: string;
   private undistortParams: number[];
   private cameraList: Array<Camera> = [];
@@ -27,6 +28,7 @@ export class CameraService {
     for (let i = 0; i < camCount; ++i) {
       const camera = this.getCamInfoById(i);
       this.cameraList.push(camera);
+      this.logger.verbose(`相机${i}初始化完成`);
 
       const params = this.undistortParams.doubleToBuffer();
       waferDll.camera_undistort(i, params);
