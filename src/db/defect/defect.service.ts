@@ -4,5 +4,5 @@ import { Defect } from './defect.entity';
 
 @Injectable()
 export class DefectService {
-  constructor(@InjectModel(Defect) public readonly model: typeof Defect) {}
+  constructor(@InjectModel(Defect) private readonly model: typeof Defect) {}
 }

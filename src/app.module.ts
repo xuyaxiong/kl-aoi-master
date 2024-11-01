@@ -12,12 +12,14 @@ import { PlcService } from './plc/plc.service';
 import { WsModule } from './ws/ws.module';
 import { PatternModule } from './db/pattern/pattern.module';
 import { DefectModule } from './db/defect/defect.module';
+import { RecipeModule } from './db/recipe/recipe.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [localConfig] }),
     EventEmitterModule.forRoot(),
     DatabaseModule,
+    RecipeModule,
     PatternModule,
     DefectModule,
     WsModule,
