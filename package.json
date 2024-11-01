@@ -26,15 +26,19 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/event-emitter": "^2.1.1",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/sequelize": "^10.0.1",
     "@nestjs/swagger": "^8.0.1",
     "chalk": "4",
     "ffi-napi": "^4.0.3",
     "kl-buffer": "^1.0.4",
     "kl-ins": "^1.1.0",
     "lodash": "^4.17.21",
+    "mariadb": "^3.4.0",
     "ref-napi": "^3.0.3",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "sequelize": "^6.37.5",
+    "sequelize-typescript": "^2.1.6"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
