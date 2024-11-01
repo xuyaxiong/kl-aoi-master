@@ -10,12 +10,14 @@ import { CameraService } from './camera/camera.service';
 import { PlcCtroller } from './plc/plc.controller';
 import { PlcService } from './plc/plc.service';
 import { WsModule } from './ws/ws.module';
+import { PatternModule } from './db/pattern/pattern.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [localConfig] }),
     EventEmitterModule.forRoot(),
     DatabaseModule,
+    PatternModule,
     WsModule,
   ],
   controllers: [AppController, CameraController, PlcCtroller],
