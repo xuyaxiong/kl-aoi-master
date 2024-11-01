@@ -5,5 +5,5 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('pattern')
 @Controller('pattern')
 export class PatternController {
-  constructor(public readonly service: PatternService) {}
+  constructor(private readonly patternService: PatternService) {}
 }

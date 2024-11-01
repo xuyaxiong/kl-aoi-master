@@ -11,6 +11,7 @@ import { PlcCtroller } from './plc/plc.controller';
 import { PlcService } from './plc/plc.service';
 import { WsModule } from './ws/ws.module';
 import { PatternModule } from './db/pattern/pattern.module';
+import { DefectModule } from './db/defect/defect.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PatternModule } from './db/pattern/pattern.module';
     EventEmitterModule.forRoot(),
     DatabaseModule,
     PatternModule,
+    DefectModule,
     WsModule,
   ],
   controllers: [AppController, CameraController, PlcCtroller],
