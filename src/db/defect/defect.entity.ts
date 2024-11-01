@@ -5,6 +5,7 @@ import { Table, Column, Model, DataType } from 'sequelize-typescript';
   tableName: 'defect',
   freezeTableName: true,
   paranoid: true,
+  underscored: true,
 })
 export class Defect extends Model<Defect> {
   @Column({

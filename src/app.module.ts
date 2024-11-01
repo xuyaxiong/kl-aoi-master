@@ -14,6 +14,7 @@ import { PatternModule } from './db/pattern/pattern.module';
 import { DefectModule } from './db/defect/defect.module';
 import { RecipeModule } from './db/recipe/recipe.module';
 import { UserModule } from './db/user/user.module';
+import { MaterialModule } from './db/material/material.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UserModule } from './db/user/user.module';
     PatternModule,
     DefectModule,
     RecipeModule,
+    MaterialModule,
     WsModule,
   ],
   controllers: [AppController, CameraController, PlcCtroller],
