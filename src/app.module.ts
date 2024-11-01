@@ -13,15 +13,17 @@ import { WsModule } from './ws/ws.module';
 import { PatternModule } from './db/pattern/pattern.module';
 import { DefectModule } from './db/defect/defect.module';
 import { RecipeModule } from './db/recipe/recipe.module';
+import { UserModule } from './db/user/user.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [localConfig] }),
     EventEmitterModule.forRoot(),
     DatabaseModule,
-    RecipeModule,
+    UserModule,
     PatternModule,
     DefectModule,
+    RecipeModule,
     WsModule,
   ],
   controllers: [AppController, CameraController, PlcCtroller],
