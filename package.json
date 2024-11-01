@@ -30,6 +30,7 @@
     "chalk": "4",
     "ffi-napi": "^4.0.3",
     "kl-buffer": "^1.0.4",
+    "kl-ins": "^1.1.0",
     "lodash": "^4.17.21",
     "ref-napi": "^3.0.3",
     "reflect-metadata": "^0.2.0",
