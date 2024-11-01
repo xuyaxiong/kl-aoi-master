@@ -5,9 +5,11 @@ import { spawn } from 'child_process';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptor/logging.interceptor';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('/api');
   app.useGlobalInterceptors(new LoggingInterceptor());
   swaggerDoc(app);
