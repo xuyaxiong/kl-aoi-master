@@ -5,7 +5,6 @@ import localConfig from './config/local.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './db/database.module';
-import { DatabaseService } from './db/database.service';
 import { CameraController } from './camera/camera.controller';
 import { CameraService } from './camera/camera.service';
 import { PlcCtroller } from './plc/plc.controller';
@@ -18,6 +17,6 @@ import { PlcService } from './plc/plc.service';
     DatabaseModule,
   ],
   controllers: [AppController, CameraController, PlcCtroller],
-  providers: [AppService, DatabaseService, CameraService, PlcService],
+  providers: [AppService, CameraService, PlcService],
 })
 export class AppModule {}

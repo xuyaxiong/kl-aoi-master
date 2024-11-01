@@ -1,6 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { DatabaseService } from './database.service';
+import { SysDictModule } from './dict/SysDict.module';
+import { SysDictType } from './dict/SysDictType.entity';
+import { SysDictItem } from './dict/SysDictItem.entity';
 
 @Global()
 @Module({
@@ -11,13 +14,14 @@ import { DatabaseService } from './database.service';
       port: 3306,
       username: 'root',
       password: '123456',
-      database: 'nest',
+      database: 'test-aoi',
       timezone: '+08:00',
       logging: false,
       autoLoadModels: true,
       synchronize: true,
-      models: [],
+      models: [SysDictType, SysDictItem],
     }),
+    SysDictModule,
   ],
   providers: [DatabaseService],
   exports: [DatabaseService],
