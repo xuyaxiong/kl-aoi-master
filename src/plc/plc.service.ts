@@ -7,6 +7,7 @@ import {
   MoveIns,
   JogStartIns,
   JogStopIns,
+  ReportDataHandler,
 } from 'kl-ins';
 import {
   HomeParam,
@@ -31,6 +32,10 @@ export class PlcService {
       this.plcTcpConfig.port,
     );
     this.client.connect();
+  }
+
+  public setReportDataHandler(handler: ReportDataHandler) {
+    this.client.setReportDataHandler(handler);
   }
 
   async enumAxis() {

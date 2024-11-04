@@ -11,7 +11,7 @@ import {
 } from './plc.param';
 
 @Controller('electric')
-export class PlcCtroller {
+export class PlcController {
   constructor(private plcService: PlcService) {}
 
   @Post('home')

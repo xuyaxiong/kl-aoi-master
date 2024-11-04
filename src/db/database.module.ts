@@ -2,8 +2,12 @@ import { Global, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { DatabaseService } from './database.service';
 import { SysDictModule } from './dict/SysDict.module';
-import { SysDictType } from './dict/SysDictType.entity';
-import { SysDictItem } from './dict/SysDictItem.entity';
+import { DefectModule } from './defect/defect.module';
+import { FlawModule } from './flaw/flaw.module';
+import { MaterialModule } from './material/material.module';
+import { PatternModule } from './pattern/pattern.module';
+import { RecipeModule } from './recipe/recipe.module';
+import { UserModule } from './user/user.module';
 
 @Global()
 @Module({
@@ -19,9 +23,14 @@ import { SysDictItem } from './dict/SysDictItem.entity';
       logging: false,
       autoLoadModels: true,
       synchronize: true,
-      models: [SysDictType, SysDictItem],
     }),
     SysDictModule,
+    DefectModule,
+    FlawModule,
+    MaterialModule,
+    PatternModule,
+    RecipeModule,
+    UserModule,
   ],
   providers: [DatabaseService],
   exports: [DatabaseService],
