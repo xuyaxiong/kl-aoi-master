@@ -33,6 +33,7 @@
     "@nestjs/swagger": "^8.0.1",
     "@nestjs/websockets": "^10.4.6",
     "chalk": "4",
+    "dayjs": "^1.11.13",
     "ffi-napi": "^4.0.3",
     "kl-buffer": "^1.0.4",
     "kl-ins": "^1.1.0",

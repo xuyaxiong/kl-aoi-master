@@ -23,6 +23,9 @@ import { UserModule } from './user/user.module';
       logging: false,
       autoLoadModels: true,
       synchronize: true,
+      dialectOptions: {
+        connectTimeout: 15_000, // 连接超时时间（毫秒）
+      },
     }),
     SysDictModule,
     DefectModule,
