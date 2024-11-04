@@ -1,24 +1,15 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({
-  timestamps: false,
-  tableName: 'sys_dict_type',
-  freezeTableName: true,
-  paranoid: true,
-  underscored: true,
-})
-export class SysDictType extends Model<SysDictType> {
-  @Column({
-    primaryKey: true,
-    autoIncrement: true,
-  })
+@Entity()
+export class SysDictType {
+  @PrimaryGeneratedColumn()
   id: number;
-  @Column
+  @Column()
   typeCode: string;
-  @Column
+  @Column()
   typeName: string;
-  @Column
+  @Column()
   desc: string;
-  @Column
+  @Column()
   sort: number;
 }

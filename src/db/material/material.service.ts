@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Material } from './material.entity';
 
 @Injectable()
 export class MaterialService {
-  constructor(@InjectModel(Material) private readonly model: typeof Material) {}
+  constructor(
+    @InjectRepository(Material)
+    private readonly repository: Repository<Material>,
+  ) {}
 }

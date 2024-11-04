@@ -1,25 +1,16 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({
-  timestamps: false,
-  tableName: 'pattern',
-  freezeTableName: true,
-  paranoid: true,
-  underscored: true,
-})
-export class Pattern extends Model<Pattern> {
-  @Column({
-    primaryKey: true,
-    autoIncrement: true,
-  })
+@Entity()
+export class Pattern {
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column
+  @Column()
   name: string;
 
-  @Column
+  @Column()
   color: string;
 
-  @Column
+  @Column()
   modelFile: string;
 }

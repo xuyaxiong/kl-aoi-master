@@ -1,5 +1,4 @@
 import { Global, Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { DatabaseService } from './database.service';
 import { SysDictModule } from './dict/SysDict.module';
 import { DefectModule } from './defect/defect.module';
@@ -8,12 +7,13 @@ import { MaterialModule } from './material/material.module';
 import { PatternModule } from './pattern/pattern.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { UserModule } from './user/user.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Global()
 @Module({
   imports: [
-    SequelizeModule.forRoot({
-      dialect: 'mariadb',
+    TypeOrmModule.forRoot({
+      type: 'mariadb',
       host: 'localhost',
       port: 3306,
       username: 'root',
@@ -21,11 +21,9 @@ import { UserModule } from './user/user.module';
       database: 'test-aoi',
       timezone: '+08:00',
       logging: false,
-      autoLoadModels: true,
+      autoLoadEntities: true,
       synchronize: true,
-      dialectOptions: {
-        connectTimeout: 15_000, // 连接超时时间（毫秒）
-      },
+      connectTimeout: 15_000,
     }),
     SysDictModule,
     DefectModule,

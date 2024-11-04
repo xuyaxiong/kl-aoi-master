@@ -1,42 +1,32 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({
-  timestamps: false,
-  tableName: 'material',
-  freezeTableName: true,
-  paranoid: true,
-  underscored: true,
-})
-export class Material extends Model<Material> {
-  @Column({
-    primaryKey: true,
-  })
+@Entity()
+export class Material {
+  @PrimaryGeneratedColumn()
   id: string;
-
-  @Column
+  @Column()
   sn: string;
-
-  @Column
+  @Column()
   recipeId: number;
 
-  @Column
+  @Column()
   startTime: Date;
 
-  @Column
+  @Column()
   endTime: Date;
 
-  @Column
+  @Column()
   outputPath: string;
 
-  @Column
+  @Column()
   dataOutputPath: string; // 客户数据输出路径
 
-  @Column
+  @Column()
   rectifyParams: string;
 
-  @Column
+  @Column()
   detectLensParams: string;
 
-  @Column
+  @Column()
   imgInfo: string;
 }

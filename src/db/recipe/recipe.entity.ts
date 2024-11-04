@@ -1,25 +1,16 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({
-  timestamps: false,
-  tableName: 'recipe',
-  freezeTableName: true,
-  paranoid: true,
-  underscored: true,
-})
-export class Recipe extends Model<Recipe> {
-  @Column({
-    primaryKey: true,
-    autoIncrement: true,
-  })
+@Entity()
+export class Recipe {
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column
+  @Column()
   name: string;
 
-  @Column
+  @Column()
   config: string;
 
-  @Column
+  @Column()
   sort: number;
 }

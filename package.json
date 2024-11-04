@@ -29,8 +29,8 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.4.6",
     "@nestjs/platform-ws": "^10.4.6",
-    "@nestjs/sequelize": "^10.0.1",
     "@nestjs/swagger": "^8.0.1",
+    "@nestjs/typeorm": "^10.0.2",
     "@nestjs/websockets": "^10.4.6",
     "chalk": "4",
     "dayjs": "^1.11.13",
@@ -39,12 +39,12 @@
     "kl-ins": "^1.1.0",
     "lodash": "^4.17.21",
     "mariadb": "^3.4.0",
+    "mysql": "^2.18.1",
     "ref-napi": "^3.0.3",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "sequelize": "^6.37.5",
-    "sequelize-typescript": "^2.1.6",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

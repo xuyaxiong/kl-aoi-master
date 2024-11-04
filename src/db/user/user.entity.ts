@@ -1,34 +1,19 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({
-  timestamps: false,
-  tableName: 'user',
-  freezeTableName: true,
-  paranoid: true,
-  underscored: true,
-})
-export class User extends Model<User> {
-  @Column({
-    primaryKey: true,
-    autoIncrement: true,
-  })
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column
+  @Column()
   name: string;
 
-  @Column
+  @Column()
   password: string;
 
-  @Column
+  @Column()
   isLock: number;
 
-  @Column
+  @Column()
   loginTime: Date;
-
-  toJSON() {
-    const data = super.toJSON();
-    delete data.password;
-    return data;
-  }
 }

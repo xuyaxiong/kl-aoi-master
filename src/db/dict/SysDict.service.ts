@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { SysDictType } from './SysDictType.entity';
 import { SysDictItem } from './SysDictItem.entity';
 import {
@@ -11,34 +10,32 @@ import {
   UpdateDictItemParam,
   GetItemListParam,
 } from './SysDict.param';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SysDictService {
   constructor(
-    @InjectModel(SysDictType)
-    private sysDictTypeModel: typeof SysDictType,
-    @InjectModel(SysDictItem)
-    private sysDictItemModel: typeof SysDictItem,
+    @InjectRepository(SysDictType)
+    private readonly sysDictTypeRepository: Repository<SysDictType>,
+    @InjectRepository(SysDictItem)
+    private readonly sysDictItemRepository: Repository<SysDictItem>,
   ) {}
 
   async findAll(): Promise<SysDictType[]> {
-    return await this.sysDictTypeModel.findAll();
+    return await this.sysDictTypeRepository.find();
   }
 
   async addDictType(addDictTypeParam: AddDictTypeParam): Promise<SysDictType> {
-    const dictType = this.sysDictTypeModel.build(addDictTypeParam);
-    return await dictType.save();
+    return this.sysDictTypeRepository.save(addDictTypeParam);
   }
 
   async addDictItem(addDictItemParam: AddDictItemParam) {
-    await this.sysDictItemModel.sequelize.transaction(async (transaction) => {
-      const dictItem = this.sysDictItemModel.build(addDictItemParam);
-      return await dictItem.save({ transaction });
-    });
+    return this.sysDictItemRepository.save(addDictItemParam);
   }
 
   async updateDictItem(updateDictItemParam: UpdateDictItemParam) {
-    const dictItem = await this.sysDictItemModel.findOne({
+    const dictItem = await this.sysDictItemRepository.findOne({
       where: {
         typeCode: updateDictItemParam.typeCode,
         code: updateDictItemParam.code,
@@ -46,13 +43,13 @@ export class SysDictService {
     });
     if (updateDictItemParam.name) dictItem.name = updateDictItemParam.name;
     dictItem.value = updateDictItemParam.value;
-    await dictItem.save();
+    await this.sysDictItemRepository.save(dictItem);
   }
 
   async getDictTypeByCode(
     getDictTypeParam: GetDictTypeParam,
   ): Promise<SysDictType> {
-    const sysDictType = await this.sysDictTypeModel.findOne({
+    const sysDictType = await this.sysDictTypeRepository.findOne({
       where: {
         ...getDictTypeParam,
       },
@@ -70,7 +67,7 @@ export class SysDictService {
       },
     };
     if (attributes) conditions['attributes'] = attributes;
-    const sysDictItem = await this.sysDictItemModel.findOne(conditions);
+    const sysDictItem = await this.sysDictItemRepository.findOne(conditions);
     return sysDictItem;
   }
 
@@ -84,7 +81,7 @@ export class SysDictService {
       },
     };
     if (attributes) conditions['attributes'] = attributes;
-    const sysDictItemList = await this.sysDictItemModel.findAll(conditions);
+    const sysDictItemList = await this.sysDictItemRepository.find(conditions);
     return sysDictItemList;
   }
 
@@ -98,7 +95,7 @@ export class SysDictService {
       },
     };
     if (attributes) conditions['attributes'] = attributes;
-    const sysDictItemList = await this.sysDictItemModel.findAll(conditions);
+    const sysDictItemList = await this.sysDictItemRepository.find(conditions);
     return sysDictItemList;
   }
 }

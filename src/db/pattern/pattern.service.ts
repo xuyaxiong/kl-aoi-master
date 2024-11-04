@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Pattern } from './pattern.entity';
 
 @Injectable()
 export class PatternService {
-  constructor(@InjectModel(Pattern) private readonly model: typeof Pattern) {}
+  constructor(
+    @InjectRepository(Pattern)
+    private readonly repository: Repository<Pattern>,
+  ) {}
 }

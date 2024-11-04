@@ -1,22 +1,13 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({
-  timestamps: false,
-  tableName: 'defect',
-  freezeTableName: true,
-  paranoid: true,
-  underscored: true,
-})
-export class Defect extends Model<Defect> {
-  @Column({
-    primaryKey: true,
-    autoIncrement: true,
-  })
+@Entity()
+export class Defect {
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column(DataType.TEXT)
+  @Column()
   name: string;
 
-  @Column
+  @Column()
   color: string;
 }

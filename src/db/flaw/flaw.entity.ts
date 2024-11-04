@@ -1,17 +1,8 @@
-import { Table, Column, Model, Default } from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({
-  timestamps: false,
-  tableName: 'flaw',
-  freezeTableName: true,
-  paranoid: true,
-  underscored: true,
-})
-export class Flaw extends Model<Flaw> {
-  @Column({
-    primaryKey: true,
-    autoIncrement: true,
-  })
+@Entity()
+export class Flaw {
+  @PrimaryGeneratedColumn()
   id: number;
 
   materialId: string;
@@ -20,28 +11,27 @@ export class Flaw extends Model<Flaw> {
 
   feature: string;
 
-  @Column
+  @Column()
   position: string;
 
-  @Default(-1)
-  @Column
+  @Column()
   type: number;
 
-  @Column
+  @Column()
   affirmType: number;
 
-  @Column
+  @Column()
   userid: string;
 
-  @Column
+  @Column()
   mappingX: number;
 
-  @Column
+  @Column()
   mappingY: number;
 
-  @Column
+  @Column()
   bin: number;
 
-  @Column
+  @Column()
   imgIndex: number;
 }

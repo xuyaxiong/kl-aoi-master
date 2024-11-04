@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { DefectService } from './defect.service';
 import { DefectController } from './defect.controller';
 import { Defect } from './defect.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Defect])],
+  imports: [TypeOrmModule.forFeature([Defect])],
   providers: [DefectService],
   controllers: [DefectController],
   exports: [DefectService],

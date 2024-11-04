@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { RecipeService } from './recipe.service';
 import { RecipeController } from './recipe.controller';
 import { Recipe } from './recipe.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Recipe])],
+  imports: [TypeOrmModule.forFeature([Recipe])],
   providers: [RecipeService],
   controllers: [RecipeController],
   exports: [RecipeService],

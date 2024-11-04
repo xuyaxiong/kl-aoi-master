@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { MaterialService } from './material.service';
 import { MaterialController } from './material.controller';
 import { Material } from './material.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Material])],
+  imports: [TypeOrmModule.forFeature([Material])],
   providers: [MaterialService],
   controllers: [MaterialController],
   exports: [MaterialService],
