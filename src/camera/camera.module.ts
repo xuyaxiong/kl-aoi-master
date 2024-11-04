@@ -6,5 +6,6 @@ import { CameraService } from './camera.service';
   imports: [],
   controllers: [CameraController],
   providers: [CameraService],
+  exports: [CameraService],
 })
 export class CameraModule {}

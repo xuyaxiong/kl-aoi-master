@@ -10,7 +10,7 @@ export class CameraController {
 
   @Get('list')
   getList() {
-    return this.cameraService.getCameraList();
+    return HttpResponse.ok(this.cameraService.getCameraList());
   }
 
   @Post('setExposureTime/:id')

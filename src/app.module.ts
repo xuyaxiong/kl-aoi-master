@@ -6,14 +6,11 @@ import bench1Config from './config/bench1.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './db/database.module';
-import { CameraController } from './camera/camera.controller';
-import { CameraService } from './camera/camera.service';
-import { PlcController } from './plc/plc.controller';
-import { PlcService } from './plc/plc.service';
 import { WsModule } from './ws/ws.module';
 import { AOIDBModule } from './aoiDB/aoiDB.module';
 import { DetectModule } from './detect/detect.module';
 import { PlcModule } from './plc/plc.module';
+import { CameraModule } from './camera/camera.module';
 
 @Module({
   imports: [
@@ -27,10 +24,11 @@ import { PlcModule } from './plc/plc.module';
     WsModule,
     DatabaseModule,
     PlcModule,
+    CameraModule,
     AOIDBModule,
     DetectModule,
   ],
-  controllers: [AppController, CameraController, PlcController],
-  providers: [AppService, CameraService, PlcService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
