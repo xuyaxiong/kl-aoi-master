@@ -16,11 +16,14 @@ import { RecipeModule } from './db/recipe/recipe.module';
 import { UserModule } from './db/user/user.module';
 import { MaterialModule } from './db/material/material.module';
 import { FlawModule } from './db/flaw/flaw.module';
+import { AOIDBModule } from './aoiDB/aoiDB.module';
+import { DetectModule } from './detect/detect.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [localConfig] }),
     EventEmitterModule.forRoot(),
+    WsModule,
     DatabaseModule,
     UserModule,
     PatternModule,
@@ -28,7 +31,8 @@ import { FlawModule } from './db/flaw/flaw.module';
     RecipeModule,
     MaterialModule,
     FlawModule,
-    WsModule,
+    AOIDBModule,
+    DetectModule,
   ],
   controllers: [AppController, CameraController, PlcCtroller],
   providers: [AppService, CameraService, PlcService],
