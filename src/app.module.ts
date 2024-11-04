@@ -15,6 +15,7 @@ import { DefectModule } from './db/defect/defect.module';
 import { RecipeModule } from './db/recipe/recipe.module';
 import { UserModule } from './db/user/user.module';
 import { MaterialModule } from './db/material/material.module';
+import { FlawModule } from './db/flaw/flaw.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MaterialModule } from './db/material/material.module';
     DefectModule,
     RecipeModule,
     MaterialModule,
+    FlawModule,
     WsModule,
   ],
   controllers: [AppController, CameraController, PlcCtroller],
