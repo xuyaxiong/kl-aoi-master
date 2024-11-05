@@ -4,15 +4,17 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class Material {
   @PrimaryGeneratedColumn()
   id: string;
+
   @Column()
   sn: string;
+
   @Column()
   recipeId: number;
 
-  @Column()
+  @Column({ default: () => 'NOW()' })
   startTime: Date;
 
-  @Column()
+  @Column({ nullable: true })
   endTime: Date;
 
   @Column()
@@ -21,12 +23,12 @@ export class Material {
   @Column()
   dataOutputPath: string; // 客户数据输出路径
 
-  @Column()
+  @Column({ nullable: true })
   rectifyParams: string;
 
-  @Column()
+  @Column({ nullable: true })
   detectLensParams: string;
 
-  @Column()
+  @Column({ nullable: true })
   imgInfo: string;
 }

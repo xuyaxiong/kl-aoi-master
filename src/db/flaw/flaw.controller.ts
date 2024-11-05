@@ -1,9 +1,45 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Put,
+  Delete,
+} from '@nestjs/common';
 import { FlawService } from './flaw.service';
-import { ApiTags } from '@nestjs/swagger';
+import { Flaw } from './flaw.entity';
+import HttpResponse from 'src/utils/api_res';
 
-@ApiTags('flaw')
 @Controller('flaw')
 export class FlawController {
-  constructor(public readonly flawService: FlawService) {}
+  constructor(private readonly flawService: FlawService) {}
+
+  @Get()
+  async findAll(): Promise<HttpResponse<Flaw[]>> {
+    return HttpResponse.ok(await this.flawService.findAll());
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<HttpResponse<Flaw>> {
+    return HttpResponse.ok(await this.flawService.findOne(id));
+  }
+
+  @Post()
+  async create(@Body() createFlaw: Partial<Flaw>): Promise<HttpResponse<Flaw>> {
+    return HttpResponse.ok(await this.flawService.create(createFlaw));
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id') id: number,
+    @Body() updateFlaw: Partial<Flaw>,
+  ): Promise<HttpResponse<Flaw>> {
+    return HttpResponse.ok(await this.flawService.update(id, updateFlaw));
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number): Promise<HttpResponse<void>> {
+    return HttpResponse.ok(await this.flawService.delete(id));
+  }
 }
