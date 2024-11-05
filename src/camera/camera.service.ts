@@ -48,8 +48,19 @@ export class CameraService {
     });
   }
 
+  // 根据出图序号纠正出图顺序
+  private imagePtrMap = new Map<number, ImagePtr>();
+  private expectedFrameNo = 0;
   private async grabbed(imagePtr: ImagePtr) {
-    this.eventEmitter.emit(`camera.grabbed`, imagePtr);
+    this.imagePtrMap.set(imagePtr.frameId, imagePtr);
+    while (this.imagePtrMap.size > 0) {
+      const expectedImagePtr = this.imagePtrMap.get(this.expectedFrameNo);
+      if (expectedImagePtr) {
+        this.imagePtrMap.delete(this.expectedFrameNo);
+        this.expectedFrameNo += 1;
+        this.eventEmitter.emit(`camera.grabbed`, expectedImagePtr);
+      }
+    }
   }
 
   public setExposureTime(camId: number, time: number) {
