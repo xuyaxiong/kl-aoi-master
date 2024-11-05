@@ -13,10 +13,7 @@ import { DetectInfoQueue, LightType, ReportPos } from './detect.bo';
 @Injectable()
 export class DetectService {
   private readonly logger = new Logger(DetectService.name);
-  private detectInfoQueue = new DetectInfoQueue([
-    LightType.COAXIAL,
-    LightType.RING,
-  ]);
+  private detectInfoQueue: DetectInfoQueue;
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -24,18 +21,25 @@ export class DetectService {
     private readonly plcService: PlcService,
     private readonly cameraService: CameraService,
   ) {
-    this.cameraService.setGrabMode('external'); // TODO 临时设置为外触发模式
     this.plcService.setReportDataHandler(async (reportData: ReportData) => {
       const { modNum, insNum, data } = reportData;
       console.log(reportData);
       // 处理数据上报
       if (modNum === 4 && insNum === 4) {
         // 拍摄点位坐标
-        const reportPos = this.parseReportPos(data);
+        const reportPos = parseReportPos(data);
         console.log(reportPos);
         this.detectInfoQueue.addPos(reportPos);
       }
     });
+  }
+
+  public start() {
+    this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
+    this.detectInfoQueue = new DetectInfoQueue([
+      LightType.COAXIAL,
+      LightType.RING,
+    ]);
   }
 
   @OnEvent('camera.grabbed')
@@ -49,19 +53,19 @@ export class DetectService {
       console.log(detectInfo);
     }
   }
+}
 
-  private parseReportPos(posDataArr: number[]): ReportPos {
-    posDataArr = _.drop(posDataArr, 6);
-    posDataArr = _.dropRight(posDataArr, 2);
-    const idx = posDataArr[0] + posDataArr[1] * 256;
-    const x = this.byteArrToFloat(_.slice(posDataArr, 2, 6));
-    const y = this.byteArrToFloat(_.slice(posDataArr, 6, 10));
-    return { idx, x, y };
-  }
+function parseReportPos(posDataArr: number[]): ReportPos {
+  posDataArr = _.drop(posDataArr, 6);
+  posDataArr = _.dropRight(posDataArr, 2);
+  const idx = posDataArr[0] + posDataArr[1] * 256;
+  const x = byteArrToFloat(_.slice(posDataArr, 2, 6));
+  const y = byteArrToFloat(_.slice(posDataArr, 6, 10));
+  return { idx, x, y };
+}
 
-  private byteArrToFloat(bytes: number[]): number {
-    const buffer = new Uint8Array(bytes).buffer;
-    const view = new DataView(buffer);
-    return view.getFloat32(0, false);
-  }
+function byteArrToFloat(bytes: number[]): number {
+  const buffer = new Uint8Array(bytes).buffer;
+  const view = new DataView(buffer);
+  return view.getFloat32(0, false);
 }
