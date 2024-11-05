@@ -1,4 +1,4 @@
-import assert from 'assert';
+const assert = require('assert');
 import { ImagePtr } from 'src/camera/camera.bo';
 
 export enum LightType {
@@ -13,7 +13,7 @@ export interface ReportPos {
 }
 
 export interface DetectInfo {
-  posIdx: number; // 点位标识，从0计数
+  pointIdx: number; // 点位标识，从0计数
   pos: ReportPos;
   image: ImagePtr;
   lightType: LightType;
@@ -21,7 +21,7 @@ export interface DetectInfo {
 
 export class DetectInfoQueue {
   private;
-  private posIdxCnt = 0;
+  private imgCnt = 0;
   private posQueue: ReportPos[] = [];
   private imageQueue: ImagePtr[] = [];
 
@@ -41,15 +41,15 @@ export class DetectInfoQueue {
 
   public shift(): DetectInfo {
     if (this.posQueue.length > 0 && this.imageQueue.length > 0) {
-      const posIdx = Math.floor(this.posIdxCnt / this.lightTypeLoop.length);
+      const pointIdx = Math.floor(this.imgCnt / this.lightTypeLoop.length);
       const lightType =
-        this.lightTypeLoop[this.posIdxCnt % this.lightTypeLoop.length];
-      this.posIdxCnt += 1;
+        this.lightTypeLoop[this.imgCnt % this.lightTypeLoop.length];
+      this.imgCnt += 1;
       const pos = this.posQueue.shift();
       const image = this.imageQueue.shift();
-      assert(pos !== undefined, '坐标为空');
-      assert(image !== undefined, '图片为空');
-      return { posIdx, pos, lightType, image };
+      assert(pos !== undefined, '坐标不能为空');
+      assert(image !== undefined, '图片不能为空');
+      return { pointIdx, pos, lightType, image };
     }
     return null;
   }

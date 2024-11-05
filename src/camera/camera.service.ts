@@ -109,7 +109,7 @@ export class CameraService {
 
   private getGrabCb(id: number, resolve) {
     return waferDll.grabCb((fno, buffer, height, width, channel) => {
-      console.log('采图帧号：', fno);
+      // console.log('采图帧号：', fno);
       const klBuffer = KLBuffer.alloc(width * height * channel, buffer);
       const imagePtr: ImagePtr = new ImagePtr(
         [klBuffer.ptrVal, klBuffer.size],
