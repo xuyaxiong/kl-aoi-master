@@ -8,11 +8,15 @@ import { PlcService } from 'src/plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
 import { saveTmpImagePtr } from 'src/utils/image_utils';
-import { ReportPos } from './detect.bo';
+import { DetectInfoQueue, LightType, ReportPos } from './detect.bo';
 
 @Injectable()
 export class DetectService {
   private readonly logger = new Logger(DetectService.name);
+  private detectInfoQueue = new DetectInfoQueue([
+    LightType.COAXIAL,
+    LightType.RING,
+  ]);
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -29,14 +33,21 @@ export class DetectService {
         // 拍摄点位坐标
         const reportPos = this.parseReportPos(data);
         console.log(reportPos);
+        this.detectInfoQueue.addPos(reportPos);
       }
     });
   }
 
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr) {
-    const imagePath = saveTmpImagePtr(imagePtr);
-    console.log(imagePath);
+    this.detectInfoQueue.addImage(imagePtr);
+    this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
+    // const imagePath = saveTmpImagePtr(imagePtr);
+    // console.log(imagePath);
+    while (!this.detectInfoQueue.isEmpty()) {
+      const detectInfo = this.detectInfoQueue.shift();
+      console.log(detectInfo);
+    }
   }
 
   private parseReportPos(posDataArr: number[]): ReportPos {
