@@ -1,4 +1,5 @@
 const assert = require('assert');
+const chalk = require('chalk');
 import { ImagePtr } from 'src/camera/camera.bo';
 
 export enum DetectType {
@@ -109,9 +110,9 @@ export class DetectedCounter {
   }
 
   public toString(): string {
-    return `总图片数：${this.totalImgCnt}
-检测总数：${this.total}/${this.totalDetectCnt}
-外观检：${this.anomaly}/${this.totalAnomalyCnt}
-测量：${this.measure}/${this.totalMeasureCnt}`;
+    return `${chalk.cyan.bold('图片总数')}：${chalk.green.bold(this.totalImgCnt)}
+${chalk.cyan.bold('检测总数')}：${chalk.magenta.bold(this.total)}/${chalk.green.bold(this.totalDetectCnt)}
+${chalk.cyan.bold('外观总数')}：${chalk.magenta.bold(this.anomaly)}/${chalk.green.bold(this.totalAnomalyCnt)}
+${chalk.cyan.bold('测量总数')}：${chalk.magenta.bold(this.measure)}/${chalk.green.bold(this.totalMeasureCnt)}`;
   }
 }

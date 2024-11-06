@@ -64,11 +64,13 @@ export class DetectService {
     this.totalDetectCnt = detectCount.totalDetectCnt;
     this.totalAnomalyCnt = detectCount.totalAnomalyCnt;
     this.totalMeasureCnt = detectCount.totalMeasureCnt;
-    this.logger.log(`总点位数：${totalPointCnt}`);
-    this.logger.log(`总图片数：${this.totalImgCnt}`);
-    this.logger.log(`总检测数：${this.totalDetectCnt}`);
-    this.logger.log(`总外观检测数：${this.totalAnomalyCnt}`);
-    this.logger.log(`总测量数：${this.totalMeasureCnt}`);
+    this.logger.warn(`******************************`);
+    this.logger.warn(`总点位数：${totalPointCnt}`);
+    this.logger.warn(`总图片数：${this.totalImgCnt}`);
+    this.logger.warn(`总检测数：${this.totalDetectCnt}`);
+    this.logger.warn(`总外观数：${this.totalAnomalyCnt}`);
+    this.logger.warn(`总测量数：${this.totalMeasureCnt}`);
+    this.logger.warn(`******************************`);
     this.detectedCounter = new DetectedCounter(
       this.totalImgCnt,
       this.totalDetectCnt,
