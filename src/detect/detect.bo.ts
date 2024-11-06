@@ -118,3 +118,8 @@ ${chalk.cyan.bold('测量总数')}：${chalk.magenta.bold(this.measure)}/${chalk
 ${chalk.cyan.bold('******************************')}`;
   }
 }
+
+export interface MeasureRemoteCfg {
+  host: string;
+  port: number;
+}

@@ -9,6 +9,12 @@ export interface Camera {
   id: number;
 }
 
+export interface ImageSize {
+  width: number;
+  height: number;
+  channel: number;
+}
+
 export interface Image {
   buffer: Buffer;
   width: number;

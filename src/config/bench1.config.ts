@@ -22,4 +22,8 @@ export default () => ({
       detectTypeList: [DetectType.ANOMALY],
     },
   ],
+  measureRemoteCfg: {
+    host: 'http://127.0.0.1',
+    port: 3000,
+  },
 });

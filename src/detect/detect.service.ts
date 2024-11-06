@@ -14,8 +14,11 @@ import {
   DetectInfoQueue,
   DetectType,
   LightType,
+  MeasureRemoteCfg,
   ReportPos,
 } from './detect.bo';
+import { MeasureParam } from './detect.param';
+import axios from 'axios';
 
 @Injectable()
 export class DetectService {
@@ -27,8 +30,11 @@ export class DetectService {
   private totalDetectCnt: number;
   private totalAnomalyCnt: number;
   private totalMeasureCnt: number;
+  private currImgCnt: number;
   private anomalyResult: any[];
   private measureResult: any[];
+
+  private measureRemoteCfg: MeasureRemoteCfg;
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -36,6 +42,8 @@ export class DetectService {
     private readonly plcService: PlcService,
     private readonly cameraService: CameraService,
   ) {
+    this.measureRemoteCfg =
+      this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
     this.detectCfgSeq = this.configService.get<DetectCfg[]>('detectCfgSeq');
     console.log('detectCfgSeq =', this.detectCfgSeq);
     this.plcService.setReportDataHandler(async (reportData: ReportData) => {
@@ -64,6 +72,7 @@ export class DetectService {
     this.totalDetectCnt = detectCount.totalDetectCnt;
     this.totalAnomalyCnt = detectCount.totalAnomalyCnt;
     this.totalMeasureCnt = detectCount.totalMeasureCnt;
+    this.currImgCnt = 0;
     this.logger.warn(`******************************`);
     this.logger.warn(`总点位数：${totalPointCnt}`);
     this.logger.warn(`总图片数：${this.totalImgCnt}`);
@@ -83,6 +92,8 @@ export class DetectService {
   private measureResList: number[][];
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr) {
+    this.currImgCnt += 1;
+    console.log('当前收到图片数量：', this.currImgCnt);
     this.detectInfoQueue.addImagePtr(imagePtr);
     this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
     // const imagePath = saveTmpImagePtr(imagePtr);
@@ -156,6 +167,17 @@ export class DetectService {
       [1, 2, 3, 4, 5, 6],
       [6, 5, 4, 3, 2, 1],
     ];
+  }
+
+  public async measureRemote(measureParam: MeasureParam) {
+    const measureUrl = `${this.measureRemoteCfg.host}:${this.measureRemoteCfg.port}/measure/measure`;
+    try {
+      const res = await axios.post(measureUrl, measureParam);
+      const data = res.data.data;
+      return data;
+    } catch (error) {
+      console.error('error:', error);
+    }
   }
 }
 

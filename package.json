@@ -32,6 +32,7 @@
     "@nestjs/swagger": "^8.0.1",
     "@nestjs/typeorm": "^10.0.2",
     "@nestjs/websockets": "^10.4.6",
+    "axios": "^1.7.7",
     "chalk": "4",
     "dayjs": "^1.11.13",
     "ffi-napi": "^4.0.3",
