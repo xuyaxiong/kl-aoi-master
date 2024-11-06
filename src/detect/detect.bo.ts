@@ -75,3 +75,39 @@ export class DetectInfoQueue {
     return null;
   }
 }
+
+export class DetectedCounter {
+  private total: number = 0;
+  private anomaly: number = 0;
+  private measure: number = 0;
+
+  constructor(
+    private totalDetectCnt: number,
+    private totalAnomalyCnt: number,
+    private totalMeasureCnt: number,
+  ) {}
+
+  public plusAnomalyCnt() {
+    this.anomaly++;
+    this.total++;
+    if (this.isDone()) {
+      console.log('检测完成');
+    }
+  }
+
+  public plusMeasureCnt() {
+    this.measure++;
+    this.total++;
+    if (this.isDone()) {
+      console.log('检测完成');
+    }
+  }
+
+  private isDone() {
+    return this.total === this.totalDetectCnt;
+  }
+
+  public toString(): string {
+    return `检测总数：${this.total}/${this.totalDetectCnt}\n外观检：${this.anomaly}/${this.totalAnomalyCnt}\n测量：${this.measure}/${this.totalMeasureCnt}`;
+  }
+}
