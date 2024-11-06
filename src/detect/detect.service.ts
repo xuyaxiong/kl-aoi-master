@@ -8,12 +8,19 @@ import { PlcService } from 'src/plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
 import { saveTmpImagePtr } from 'src/utils/image_utils';
-import { DetectInfoQueue, DetectType, LightType, ReportPos } from './detect.bo';
+import {
+  DetectCfg,
+  DetectInfoQueue,
+  DetectType,
+  LightType,
+  ReportPos,
+} from './detect.bo';
 
 @Injectable()
 export class DetectService {
   private readonly logger = new Logger(DetectService.name);
   private detectInfoQueue: DetectInfoQueue;
+  private detectCfgSeq: DetectCfg[];
   private anomalyResult: any[];
   private measureResult: any[];
 
@@ -23,6 +30,8 @@ export class DetectService {
     private readonly plcService: PlcService,
     private readonly cameraService: CameraService,
   ) {
+    this.detectCfgSeq = this.configService.get<DetectCfg[]>('detectCfgSeq');
+    console.log('detectCfgSeq =', this.detectCfgSeq);
     this.plcService.setReportDataHandler(async (reportData: ReportData) => {
       const { modNum, insNum, data } = reportData;
       console.log(reportData);
@@ -34,20 +43,13 @@ export class DetectService {
         this.detectInfoQueue.addPos(reportPos);
       }
     });
+
+    this.start(); // TODO 测试用
   }
 
   public start() {
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
-    this.detectInfoQueue = new DetectInfoQueue([
-      {
-        lightType: LightType.COAXIAL,
-        detectTypeList: [DetectType.ANOMALY, DetectType.MEASURE],
-      },
-      {
-        lightType: LightType.RING,
-        detectTypeList: [DetectType.ANOMALY],
-      },
-    ]);
+    this.detectInfoQueue = new DetectInfoQueue(this.detectCfgSeq);
   }
 
   @OnEvent('camera.grabbed')

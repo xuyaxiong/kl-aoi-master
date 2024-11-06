@@ -1,3 +1,5 @@
+import { DetectType, LightType } from 'src/detect/detect.bo';
+
 export default () => ({
   detectCamType: 'Hik',
   undistortParams: [
@@ -10,4 +12,14 @@ export default () => ({
     host: '192.168.0.3',
     port: 5000,
   },
+  detectCfgSeq: [
+    {
+      lightType: LightType.COAXIAL,
+      detectTypeList: [DetectType.ANOMALY, DetectType.MEASURE],
+    },
+    {
+      lightType: LightType.RING,
+      detectTypeList: [DetectType.ANOMALY],
+    },
+  ],
 });
