@@ -8,12 +8,14 @@ import { PlcService } from 'src/plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
 import { saveTmpImagePtr } from 'src/utils/image_utils';
-import { DetectInfoQueue, LightType, ReportPos } from './detect.bo';
+import { DetectInfoQueue, DetectType, LightType, ReportPos } from './detect.bo';
 
 @Injectable()
 export class DetectService {
   private readonly logger = new Logger(DetectService.name);
   private detectInfoQueue: DetectInfoQueue;
+  private anomalyResult: any[];
+  private measureResult: any[];
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -37,20 +39,37 @@ export class DetectService {
   public start() {
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
     this.detectInfoQueue = new DetectInfoQueue([
-      LightType.COAXIAL,
-      LightType.RING,
+      {
+        lightType: LightType.COAXIAL,
+        detectTypeList: [DetectType.ANOMALY, DetectType.MEASURE],
+      },
+      {
+        lightType: LightType.RING,
+        detectTypeList: [DetectType.ANOMALY],
+      },
     ]);
   }
 
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr) {
-    this.detectInfoQueue.addImage(imagePtr);
+    this.detectInfoQueue.addImagePtr(imagePtr);
     this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
     // const imagePath = saveTmpImagePtr(imagePtr);
     // console.log(imagePath);
     while (!this.detectInfoQueue.isEmpty()) {
-      const detectInfo = this.detectInfoQueue.shift();
-      console.log(detectInfo);
+      const detectInfoList = this.detectInfoQueue.shift();
+      console.log(detectInfoList);
+      for (const detectInfo of detectInfoList) {
+        const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
+        this.logger.verbose(
+          `点位：${pointIdx}，光源类型：${lightType === LightType.COAXIAL ? '同轴' : '环光'}，检测类型：${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
+        );
+        if (detectType === DetectType.ANOMALY) {
+          // 送外观检测
+        } else if (detectType === DetectType.MEASURE) {
+          // 送测量
+        }
+      }
     }
   }
 }
