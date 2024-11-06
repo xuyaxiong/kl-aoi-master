@@ -23,6 +23,7 @@ export class DetectService {
   private detectInfoQueue: DetectInfoQueue;
   private detectCfgSeq: DetectCfg[];
   private detectedCounter: DetectedCounter;
+  private totalImgCnt: number;
   private totalDetectCnt: number;
   private totalAnomalyCnt: number;
   private totalMeasureCnt: number;
@@ -59,14 +60,17 @@ export class DetectService {
     this.measureResList = [];
     const totalPointCnt = 3; // 拍摄总点位数，外部传入
     const detectCount = this.calcDetectCount(this.detectCfgSeq, totalPointCnt);
+    this.totalImgCnt = detectCount.totalImgCnt;
     this.totalDetectCnt = detectCount.totalDetectCnt;
     this.totalAnomalyCnt = detectCount.totalAnomalyCnt;
     this.totalMeasureCnt = detectCount.totalMeasureCnt;
     this.logger.log(`总点位数：${totalPointCnt}`);
+    this.logger.log(`总图片数：${this.totalImgCnt}`);
     this.logger.log(`总检测数：${this.totalDetectCnt}`);
     this.logger.log(`总外观检测数：${this.totalAnomalyCnt}`);
     this.logger.log(`总测量数：${this.totalMeasureCnt}`);
     this.detectedCounter = new DetectedCounter(
+      this.totalImgCnt,
       this.totalDetectCnt,
       this.totalAnomalyCnt,
       this.totalMeasureCnt,
@@ -75,7 +79,6 @@ export class DetectService {
 
   private anomalyRawList: number[][];
   private measureResList: number[][];
-  // private totalDetectedCnt = 0;
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr) {
     this.detectInfoQueue.addImagePtr(imagePtr);
@@ -84,7 +87,7 @@ export class DetectService {
     // console.log(imagePath);
     while (!this.detectInfoQueue.isEmpty()) {
       const detectInfoList = this.detectInfoQueue.shift();
-      console.log('detectInfoList =', detectInfoList);
+      // console.log('detectInfoList =', detectInfoList);
       for (const detectInfo of detectInfoList) {
         const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
         this.logger.verbose(
@@ -101,7 +104,7 @@ export class DetectService {
           this.measureResList.push(...measureRes);
           this.detectedCounter.plusMeasureCnt();
         }
-        console.log('detectedCounter =', this.detectedCounter.toString());
+        console.log(this.detectedCounter.toString());
         console.log('anomalyRawList =', this.anomalyRawList);
         console.log('measureResList =', this.measureResList);
       }
@@ -128,7 +131,9 @@ export class DetectService {
           ).length,
       )
       .reduce((acc, curr) => acc + curr, 0);
+    const imgCntPerPoint = detectCfgSeq.length;
     return {
+      totalImgCnt: imgCntPerPoint * totalPointCnt,
       totalDetectCnt: detectCntPerPoint * totalPointCnt,
       totalAnomalyCnt: anomalyCntPerPoint * totalPointCnt,
       totalMeasureCnt: measureCntPerPoint * totalPointCnt,

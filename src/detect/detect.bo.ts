@@ -82,6 +82,7 @@ export class DetectedCounter {
   private measure: number = 0;
 
   constructor(
+    private totalImgCnt: number,
     private totalDetectCnt: number,
     private totalAnomalyCnt: number,
     private totalMeasureCnt: number,
@@ -108,6 +109,9 @@ export class DetectedCounter {
   }
 
   public toString(): string {
-    return `检测总数：${this.total}/${this.totalDetectCnt}\n外观检：${this.anomaly}/${this.totalAnomalyCnt}\n测量：${this.measure}/${this.totalMeasureCnt}`;
+    return `总图片数：${this.totalImgCnt}
+检测总数：${this.total}/${this.totalDetectCnt}
+外观检：${this.anomaly}/${this.totalAnomalyCnt}
+测量：${this.measure}/${this.totalMeasureCnt}`;
   }
 }
