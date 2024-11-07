@@ -90,6 +90,7 @@ export class DetectedCounter {
     private totalDetectCnt: number,
     private totalAnomalyCnt: number,
     private totalMeasureCnt: number,
+    private callback?: Function | undefined,
   ) {}
 
   public plusAnomalyCnt() {
@@ -97,6 +98,7 @@ export class DetectedCounter {
     this.total++;
     if (this.isDone()) {
       console.log('检测完成');
+      this.callback?.();
     }
   }
 
@@ -105,6 +107,7 @@ export class DetectedCounter {
     this.total++;
     if (this.isDone()) {
       console.log('检测完成');
+      this.callback?.();
     }
   }
 

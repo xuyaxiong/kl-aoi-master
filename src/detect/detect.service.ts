@@ -43,7 +43,7 @@ export class DetectService {
   private totalMeasureCnt: number;
   private currImgCnt: number;
   private anomalyResult: any[];
-  private measureResult: any[];
+  private measureResult: MeasureData[];
   private materialBO: MaterialBO;
   private measureRemoteCfg: MeasureRemoteCfg;
   private detectStatus: DetectStatus = DetectStatus.IDLE;
@@ -89,6 +89,13 @@ export class DetectService {
       this.totalDetectCnt,
       this.totalAnomalyCnt,
       this.totalMeasureCnt,
+      () => {
+        // 原始测量结果去重
+        const dedupMeasureDataList = removeDupMeasureDataList(
+          this.measureResult,
+        );
+        console.log(dedupMeasureDataList);
+      },
     );
     this.eventEmitter.emit(`startCorrection`);
   }
@@ -153,8 +160,8 @@ export class DetectService {
             this.detectedCounter.plusMeasureCnt();
           }
           console.log(this.detectedCounter.toString());
-          console.log('anomalyRawList =', this.anomalyRawList);
-          console.log('measureResList =', this.measureResList);
+          // console.log('anomalyRawList =', this.anomalyRawList);
+          // console.log('measureResList =', this.measureResList);
         }
       }
     }
@@ -290,4 +297,26 @@ function byteArrToFloat(bytes: number[]): number {
   const buffer = new Uint8Array(bytes).buffer;
   const view = new DataView(buffer);
   return view.getFloat32(0, false);
+}
+
+// TODO 测量数据合并策略
+function calcNewMeasureData(existingData: MeasureData, newData: MeasureData) {
+  return newData;
+}
+
+function removeDupMeasureDataList(
+  measureDataList: MeasureData[],
+): MeasureData[] {
+  const map = new Map();
+  measureDataList.forEach((item) => {
+    const key = `${item[0]}-${item[1]}-${item[2]}`;
+    if (map.has(key)) {
+      const existingItem = map.get(key);
+      const finalItem = calcNewMeasureData(existingItem, item);
+      map.set(key, finalItem);
+    } else {
+      map.set(key, item);
+    }
+  });
+  return Array.from(map.values());
 }
