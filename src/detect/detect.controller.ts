@@ -2,7 +2,7 @@ import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
 import { DetectService } from './detect.service';
 import { ApiOperation } from '@nestjs/swagger';
 import HttpResponse from 'src/utils/api_res';
-import { MeasureParam } from './detect.param';
+import { MeasureParam, StartParam } from './detect.param';
 
 @Controller('detect')
 export class DetectController {
@@ -10,9 +10,9 @@ export class DetectController {
 
   @Post('start')
   @ApiOperation({ summary: '开始检测' })
-  public start() {
+  public start(@Body() startParam: StartParam) {
     try {
-      this.detectService.start();
+      this.detectService.start(startParam);
       return HttpResponse.ok();
     } catch (error) {
       return HttpResponse.err(error.message);

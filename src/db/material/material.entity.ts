@@ -27,7 +27,7 @@ export class Material {
   rectifyParams: string;
 
   @Column({ nullable: true })
-  detectLensParams: string;
+  lensParams: string;
 
   @Column({ nullable: true })
   imgInfo: string;

@@ -2,6 +2,7 @@ import { Logger, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 const _ = require('lodash');
+import axios from 'axios';
 import '../extension';
 import { ImagePtr } from 'src/camera/camera.bo';
 import { PlcService } from 'src/plc/plc.service';
@@ -14,11 +15,13 @@ import {
   DetectInfoQueue,
   DetectType,
   LightType,
+  MaterialBO,
   MeasureRemoteCfg,
+  RecipeBO,
   ReportPos,
 } from './detect.bo';
-import { MeasureParam } from './detect.param';
-import axios from 'axios';
+import { MeasureParam, StartParam } from './detect.param';
+import { RecipeService } from 'src/db/recipe/recipe.service';
 
 @Injectable()
 export class DetectService {
@@ -34,6 +37,8 @@ export class DetectService {
   private anomalyResult: any[];
   private measureResult: any[];
 
+  private materialBO: MaterialBO;
+
   private measureRemoteCfg: MeasureRemoteCfg;
 
   constructor(
@@ -41,6 +46,7 @@ export class DetectService {
     private readonly configService: ConfigService,
     private readonly plcService: PlcService,
     private readonly cameraService: CameraService,
+    private readonly recipeService: RecipeService,
   ) {
     this.measureRemoteCfg =
       this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
@@ -57,12 +63,19 @@ export class DetectService {
         this.detectInfoQueue.addPos(reportPos);
       }
     });
-
-    this.start(); // TODO 测试用
   }
 
-  public start() {
+  private async initMaterialBO(sn: string, recipeId: number) {
+    const recipe = await this.recipeService.findById(recipeId);
+    const recipeBO = new RecipeBO(recipeId, recipe.name, recipe.config);
+    return new MaterialBO(sn, recipeBO);
+  }
+
+  public async start(startParam: StartParam) {
+    const { sn, recipeId } = startParam;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
+    this.materialBO = await this.initMaterialBO(sn, recipeId);
+    console.log(this.materialBO);
     this.detectInfoQueue = new DetectInfoQueue(this.detectCfgSeq);
     this.anomalyRawList = [];
     this.measureResList = [];

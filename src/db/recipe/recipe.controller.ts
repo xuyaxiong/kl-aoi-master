@@ -22,7 +22,7 @@ export class RecipeController {
 
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<HttpResponse<Recipe>> {
-    return HttpResponse.ok(await this.recipeService.findOne(id));
+    return HttpResponse.ok(await this.recipeService.findById(id));
   }
 
   @Post()

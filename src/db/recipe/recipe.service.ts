@@ -14,7 +14,7 @@ export class RecipeService {
     return this.recipeRepository.find();
   }
 
-  async findOne(id: number): Promise<Recipe> {
+  async findById(id: number): Promise<Recipe> {
     return this.recipeRepository.findOneBy({ id });
   }
 
@@ -25,7 +25,7 @@ export class RecipeService {
 
   async update(id: number, updaterecipe: Partial<Recipe>): Promise<Recipe> {
     await this.recipeRepository.update(id, updaterecipe);
-    return this.findOne(id);
+    return this.findById(id);
   }
 
   async delete(id: number): Promise<void> {
