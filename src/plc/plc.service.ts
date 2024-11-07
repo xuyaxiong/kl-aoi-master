@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+const _ = require('lodash');
 import {
   ClientProxy,
   EnumAxisIns,
@@ -15,9 +16,11 @@ import {
   MoveParam,
   JogStartParam,
   JogStopParam,
+  CapPosParam,
 } from './plc.param';
 import { ConfigService } from '@nestjs/config';
-import { PlcTcpConfig } from './plc.bo';
+import { CapPos, PlcTcpConfig } from './plc.bo';
+import { CapPosIns, TakePhotoIns } from './plc.ins';
 
 @Injectable()
 export class PlcService {
@@ -50,7 +53,7 @@ export class PlcService {
 
   async getPos(getPosParam: GetPosParam) {
     const getPosIns = new GetPosIns(getPosParam.axisList);
-    return await this.client.sendIns(getPosIns);
+    return (await this.client.sendIns(getPosIns)) as any; // TODO 后续定义返回类型
   }
 
   async move(moveParam: MoveParam) {
@@ -70,5 +73,31 @@ export class PlcService {
   async jogStop(jogStopParam: JogStopParam) {
     const jogStopIns = new JogStopIns(jogStopParam.axisNum);
     await this.client.sendIns(jogStopIns);
+  }
+
+  public async takePhoto() {
+    const takePhotoIns = new TakePhotoIns();
+    await this.client.sendIns(takePhotoIns);
+  }
+
+  private async _capPos(total: number, startIdx: number, capPosList: CapPos[]) {
+    const capPosIns = new CapPosIns(total, startIdx, capPosList);
+    await this.client.sendIns(capPosIns);
+  }
+
+  async capPos(capPosParam: CapPosParam) {
+    const capPosSliceArr = _.chunk(
+      capPosParam.capPosList,
+      capPosParam.sliceSize,
+    );
+    let start = 0;
+    for (let i = 0; i < capPosSliceArr.length; ++i) {
+      await this._capPos(
+        capPosParam.capPosList.length,
+        start,
+        capPosSliceArr[i],
+      );
+      start += capPosSliceArr[i].length;
+    }
   }
 }

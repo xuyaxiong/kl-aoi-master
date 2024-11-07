@@ -22,6 +22,14 @@ import {
 } from './detect.bo';
 import { MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from 'src/db/recipe/recipe.service';
+import { CapPos } from 'src/plc/plc.bo';
+
+enum DetectStatus {
+  IDLE,
+  CORRECTION_ONE,
+  CORRECTION_TWO,
+  DETECTING,
+}
 
 @Injectable()
 export class DetectService {
@@ -36,10 +44,9 @@ export class DetectService {
   private currImgCnt: number;
   private anomalyResult: any[];
   private measureResult: any[];
-
   private materialBO: MaterialBO;
-
   private measureRemoteCfg: MeasureRemoteCfg;
+  private detectStatus: DetectStatus = DetectStatus.IDLE;
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -99,44 +106,109 @@ export class DetectService {
       this.totalAnomalyCnt,
       this.totalMeasureCnt,
     );
+    this.eventEmitter.emit(`startCorrection`);
+  }
+
+  @OnEvent('startCorrection')
+  private async correctionTrigger() {
+    // 1. 切换到纠偏1状态
+    this.detectStatus = DetectStatus.CORRECTION_ONE;
+    // 1.1. 运动至纠偏点位1
+    await this.moveToXY(this.materialBO.recipeBO.correctionPos1);
+    // 1.2. 触发拍照
+    await this.plcService.takePhoto();
   }
 
   private anomalyRawList: number[][];
   private measureResList: number[][];
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr) {
-    this.currImgCnt += 1;
-    console.log('当前收到图片数量：', this.currImgCnt);
-    this.detectInfoQueue.addImagePtr(imagePtr);
-    this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
-    // const imagePath = saveTmpImagePtr(imagePtr);
-    // console.log(imagePath);
-    while (!this.detectInfoQueue.isEmpty()) {
-      const detectInfoList = this.detectInfoQueue.shift();
-      // console.log('detectInfoList =', detectInfoList);
-      for (const detectInfo of detectInfoList) {
-        const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
-        this.logger.verbose(
-          `点位：${pointIdx}
+    if (this.detectStatus === DetectStatus.CORRECTION_ONE) {
+      // 1.3. 获取纠偏点位1图片
+      const img1Ptr = imagePtr;
+      // 1.4. 获取纠偏点位1坐标
+      const pos1 = await this.getCurrPos();
+      // 1.5. 运动至纠偏点位2
+      await this.moveToXY(this.materialBO.recipeBO.correctionPos2);
+      // 2. 切换到纠偏2状态
+      this.detectStatus = DetectStatus.CORRECTION_TWO;
+      // 2.1. 触发拍照
+      this.plcService.takePhoto();
+    } else if (this.detectStatus === DetectStatus.CORRECTION_TWO) {
+      // 2.2. 获取纠偏点位2图片
+      const img2Ptr = imagePtr;
+      // 2.3. 获取纠偏点位2坐标
+      const pos2 = await this.getCurrPos();
+      // TODO 2.4. 调用纠偏接口
+      const correctionXY = { x: 0, y: 0 };
+      // 2.5. 执行纠偏运动
+      await this.moveToXY(correctionXY);
+      // 3. 切换到检测状态
+      this.detectStatus = DetectStatus.DETECTING;
+      // 3.1. 下发拍照点位
+      await this.plcService.capPos({
+        capPosList: this.materialBO.recipeBO.dotList,
+        sliceSize: 100,
+      });
+    } else if (this.detectStatus === DetectStatus.DETECTING) {
+      this.currImgCnt += 1;
+      console.log('当前收到图片数量：', this.currImgCnt);
+      this.detectInfoQueue.addImagePtr(imagePtr);
+      this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
+      // const imagePath = saveTmpImagePtr(imagePtr);
+      // console.log(imagePath);
+      while (!this.detectInfoQueue.isEmpty()) {
+        const detectInfoList = this.detectInfoQueue.shift();
+        // console.log('detectInfoList =', detectInfoList);
+        for (const detectInfo of detectInfoList) {
+          const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
+          this.logger.verbose(
+            `点位：${pointIdx}
 光源类型：${lightType === LightType.COAXIAL ? '同轴' : '环光'}
 检测类型：${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
-        );
-        if (detectType === DetectType.ANOMALY) {
-          // 送外观检测
-          const anomalyRes = await this.mockAnomaly();
-          this.anomalyRawList.push(...anomalyRes);
-          this.detectedCounter.plusAnomalyCnt();
-        } else if (detectType === DetectType.MEASURE) {
-          // 送测量
-          const measureRes = await this.mockMeasure();
-          this.measureResList.push(...measureRes);
-          this.detectedCounter.plusMeasureCnt();
+          );
+          if (detectType === DetectType.ANOMALY) {
+            // 送外观检测
+            const anomalyRes = await this.mockAnomaly();
+            this.anomalyRawList.push(...anomalyRes);
+            this.detectedCounter.plusAnomalyCnt();
+          } else if (detectType === DetectType.MEASURE) {
+            // 送测量
+            const measureRes = await this.mockMeasure();
+            this.measureResList.push(...measureRes);
+            this.detectedCounter.plusMeasureCnt();
+          }
+          console.log(this.detectedCounter.toString());
+          console.log('anomalyRawList =', this.anomalyRawList);
+          console.log('measureResList =', this.measureResList);
         }
-        console.log(this.detectedCounter.toString());
-        console.log('anomalyRawList =', this.anomalyRawList);
-        console.log('measureResList =', this.measureResList);
       }
     }
+  }
+
+  private async moveToXY(coor: CapPos) {
+    const moveParam = {
+      axisInfoList: [
+        {
+          axisNum: 1,
+          speed: 100,
+          dest: coor.x,
+          isRelative: false,
+        },
+        {
+          axisNum: 2,
+          speed: 100,
+          dest: coor.y,
+          isRelative: false,
+        },
+      ],
+    };
+    await this.plcService.move(moveParam);
+  }
+
+  private async getCurrPos(): Promise<CapPos> {
+    const res = await this.plcService.getPos({ axisList: [1, 2] });
+    return { x: res[0].pos, y: res[1].pos };
   }
 
   private calcDetectCount(detectCfgSeq: DetectCfg[], totalPointCnt: number) {

@@ -3,6 +3,7 @@ const chalk = require('chalk');
 import * as dayjs from 'dayjs';
 const path = require('path');
 import { ImagePtr } from 'src/camera/camera.bo';
+import { CapPos } from 'src/plc/plc.bo';
 
 export enum DetectType {
   ANOMALY, // 外观
@@ -127,11 +128,31 @@ export interface MeasureRemoteCfg {
 }
 
 export class RecipeBO {
+  public readonly correctionPos1: CapPos;
+  public readonly correctionPos2: CapPos;
+  public readonly dotList: CapPos[];
   constructor(
     public readonly id: number,
     public readonly name: string,
     private readonly config: string,
-  ) {}
+  ) {
+    const params = this.parse();
+    for (const item in params) {
+      this[item] = params[item];
+    }
+  }
+
+  private parse() {
+    const config = JSON.parse(this.config);
+    // TODO 从真实配置中解析数据
+    const correctionPos1 = { x: 50, y: 50 };
+    const correctionPos2 = { x: 100, y: 100 };
+
+    return {
+      correctionPos1,
+      correctionPos2,
+    };
+  }
 }
 
 export class MaterialBO {
@@ -145,7 +166,7 @@ export class MaterialBO {
 
   constructor(
     private readonly sn: string,
-    private readonly recipeBO: RecipeBO,
+    public readonly recipeBO: RecipeBO,
   ) {
     this.id = dayjs().format('YYYYMMDDHHmmss');
     const nowDate = dayjs(Date.now()).format('YYYYMMDD');

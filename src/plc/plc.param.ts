@@ -1,4 +1,5 @@
 import { MoveItemInfo } from 'kl-ins';
+import { CapPos } from './plc.bo';
 export interface HomeParam {
   axisList: number[];
 }
@@ -18,4 +19,9 @@ export interface JogStartParam {
 
 export interface JogStopParam {
   axisNum: number;
+}
+
+export class CapPosParam {
+  capPosList: CapPos[];
+  sliceSize: number;
 }
