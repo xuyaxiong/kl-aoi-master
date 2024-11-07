@@ -104,7 +104,9 @@ export class DetectService {
       for (const detectInfo of detectInfoList) {
         const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
         this.logger.verbose(
-          `点位：${pointIdx}，光源类型：${lightType === LightType.COAXIAL ? '同轴' : '环光'}，检测类型：${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
+          `点位：${pointIdx}
+光源类型：${lightType === LightType.COAXIAL ? '同轴' : '环光'}
+检测类型：${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
         );
         if (detectType === DetectType.ANOMALY) {
           // 送外观检测
