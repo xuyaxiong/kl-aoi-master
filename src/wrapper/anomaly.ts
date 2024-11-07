@@ -6,6 +6,7 @@ const anomaly = (anomalyName) => {
   const pathArray = process.env.PATH.split(';');
   pathArray.unshift(DLL_PATH);
   process.env.PATH = pathArray.join(';');
+
   const Library = new FFI.Library(DLL_PATH + `${anomalyName}.dll`, {
     initEngine: ['bool', ['string', 'int', 'int', 'int', 'int', 'int']],
 

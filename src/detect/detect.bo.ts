@@ -131,6 +131,7 @@ export class RecipeBO {
   public readonly correctionPos1: CapPos;
   public readonly correctionPos2: CapPos;
   public readonly dotList: CapPos[];
+  public readonly totalDotNum: number;
   constructor(
     public readonly id: number,
     public readonly name: string,
@@ -147,10 +148,12 @@ export class RecipeBO {
     // TODO 从真实配置中解析数据
     const correctionPos1 = { x: 50, y: 50 };
     const correctionPos2 = { x: 100, y: 100 };
+    const totalDotNum = 50;
 
     return {
       correctionPos1,
       correctionPos2,
+      totalDotNum,
     };
   }
 }

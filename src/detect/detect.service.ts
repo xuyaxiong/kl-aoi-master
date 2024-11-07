@@ -59,23 +59,7 @@ export class DetectService {
       this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
     this.detectCfgSeq = this.configService.get<DetectCfg[]>('detectCfgSeq');
     console.log('detectCfgSeq =', this.detectCfgSeq);
-    this.plcService.setReportDataHandler(async (reportData: ReportData) => {
-      const { modNum, insNum, data } = reportData;
-      console.log(reportData);
-      // 处理数据上报
-      if (modNum === 4 && insNum === 4) {
-        // 拍摄点位坐标
-        const reportPos = parseReportPos(data);
-        console.log(reportPos);
-        this.detectInfoQueue.addPos(reportPos);
-      }
-    });
-  }
-
-  private async initMaterialBO(sn: string, recipeId: number) {
-    const recipe = await this.recipeService.findById(recipeId);
-    const recipeBO = new RecipeBO(recipeId, recipe.name, recipe.config);
-    return new MaterialBO(sn, recipeBO);
+    this.setReportDataHandler();
   }
 
   public async start(startParam: StartParam) {
@@ -86,7 +70,7 @@ export class DetectService {
     this.detectInfoQueue = new DetectInfoQueue(this.detectCfgSeq);
     this.anomalyRawList = [];
     this.measureResList = [];
-    const totalPointCnt = 3; // 拍摄总点位数，外部传入
+    const totalPointCnt = this.materialBO.recipeBO.totalDotNum;
     const detectCount = this.calcDetectCount(this.detectCfgSeq, totalPointCnt);
     this.totalImgCnt = detectCount.totalImgCnt;
     this.totalDetectCnt = detectCount.totalDetectCnt;
@@ -107,16 +91,6 @@ export class DetectService {
       this.totalMeasureCnt,
     );
     this.eventEmitter.emit(`startCorrection`);
-  }
-
-  @OnEvent('startCorrection')
-  private async correctionTrigger() {
-    // 1. 切换到纠偏1状态
-    this.detectStatus = DetectStatus.CORRECTION_ONE;
-    // 1.1. 运动至纠偏点位1
-    await this.moveToXY(this.materialBO.recipeBO.correctionPos1);
-    // 1.2. 触发拍照
-    await this.plcService.takePhoto();
   }
 
   private anomalyRawList: number[][];
@@ -184,6 +158,36 @@ export class DetectService {
         }
       }
     }
+  }
+
+  private setReportDataHandler() {
+    this.plcService.setReportDataHandler(async (reportData: ReportData) => {
+      const { modNum, insNum, data } = reportData;
+      console.log(reportData);
+      // 处理数据上报
+      if (modNum === 4 && insNum === 4) {
+        // 拍摄点位坐标
+        const reportPos = parseReportPos(data);
+        console.log(reportPos);
+        this.detectInfoQueue.addPos(reportPos);
+      }
+    });
+  }
+
+  private async initMaterialBO(sn: string, recipeId: number) {
+    const recipe = await this.recipeService.findById(recipeId);
+    const recipeBO = new RecipeBO(recipeId, recipe.name, recipe.config);
+    return new MaterialBO(sn, recipeBO);
+  }
+
+  @OnEvent('startCorrection')
+  private async correctionTrigger() {
+    // 1. 切换到纠偏1状态
+    this.detectStatus = DetectStatus.CORRECTION_ONE;
+    // 1.1. 运动至纠偏点位1
+    await this.moveToXY(this.materialBO.recipeBO.correctionPos1);
+    // 1.2. 触发拍照
+    await this.plcService.takePhoto();
   }
 
   private async moveToXY(coor: CapPos) {
