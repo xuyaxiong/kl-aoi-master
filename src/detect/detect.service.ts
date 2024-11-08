@@ -72,7 +72,10 @@ export class DetectService {
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
     this.materialBO = await this.initMaterialBO(sn, recipeId);
     console.log(this.materialBO);
-    this.detectInfoQueue = new DetectInfoQueue(this.detectCfgSeq);
+    this.detectInfoQueue = new DetectInfoQueue(
+      this.detectCfgSeq,
+      this.materialBO.outputPath,
+    );
     this.anomalyRawList = [];
     this.measureRawList = [];
     const totalPointCnt = this.materialBO.recipeBO.totalDotNum;
@@ -98,7 +101,8 @@ export class DetectService {
       () => {
         // 原始测量结果去重
         const dedupMeasureDataList = deDupMeasureDataList(this.measureRawList);
-        console.log('去重后测量结果', dedupMeasureDataList);
+        console.log('去重前测量结果', this.measureRawList.length);
+        console.log('去重后测量结果', dedupMeasureDataList.length);
         exportMeasureDataList(
           'measure.csv',
           this.materialBO.dataOutputPath,
@@ -106,7 +110,8 @@ export class DetectService {
         );
         // 原始外观结果去重
         const dedupAnomalyDataList = deDupAnomalyDataList(this.anomalyRawList);
-        console.log('去重后外观结果', dedupAnomalyDataList);
+        console.log('去重前外观结果', this.anomalyRawList.length);
+        console.log('去重后外观结果', dedupAnomalyDataList.length);
         exportAnomalyDataList(
           'anomaly.csv',
           this.materialBO.dataOutputPath,
@@ -153,7 +158,7 @@ export class DetectService {
       this.currImgCnt += 1;
       this.logger.log(`当前收到图片数量: ${this.currImgCnt}`);
       this.detectInfoQueue.addImagePtr(imagePtr);
-      this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
+      this.detectInfoQueue.addPos(this.mockReportPos()); // TODO 随机坐标
       // const imagePath = saveTmpImagePtr(imagePtr);
       // console.log(imagePath);
       while (!this.detectInfoQueue.isEmpty()) {
@@ -184,6 +189,7 @@ export class DetectService {
     }
   }
 
+  // 模拟相机出图
   private mockImgSeqGenerator(imgNum: number, delay: number = 1_000) {
     const [width, height, channel] = [5120, 5120, 3];
     let fno = 0;
@@ -200,6 +206,7 @@ export class DetectService {
     }, delay);
   }
 
+  // 处理上报数据
   private setReportDataHandler() {
     this.plcService.setReportDataHandler(async (reportData: ReportData) => {
       const { modNum, insNum, data } = reportData;
@@ -230,6 +237,7 @@ export class DetectService {
     await this.plcService.takePhoto();
   }
 
+  // 运动到该位置
   private async moveToXY(coor: CapPos) {
     const moveParam = {
       axisInfoList: [
@@ -250,6 +258,7 @@ export class DetectService {
     await this.plcService.move(moveParam);
   }
 
+  // 获取当前坐标
   private async getCurrPos(): Promise<CapPos> {
     const res = await this.plcService.getPos({ axisList: [1, 2] });
     return { x: res[0].pos, y: res[1].pos };
@@ -284,30 +293,59 @@ export class DetectService {
     };
   }
 
-  private async mockAnomaly(): Promise<AnomalyDataItem[]> {
+  // 模拟外观检测
+  private async mockAnomaly(count: number = 1000): Promise<AnomalyDataItem[]> {
     await randomDelay(2000, 3000);
-    return [
-      {
-        R: 1,
-        C: 2,
-        id: 3,
-        types: [4],
-      },
-      {
-        R: 4,
-        C: 3,
-        id: 2,
-        types: [1],
-      },
-    ];
+    const data: Array<AnomalyDataItem> = [];
+    for (let i = 0; i < count; i++) {
+      const randomR: number = Math.floor(Math.random() * 100) + 1;
+      const randomC: number = Math.floor(Math.random() * 100) + 1;
+      const randomId: number = Math.floor(Math.random() * 100) + 1;
+      const typesLength: number = Math.floor(Math.random() * 5) + 1;
+      const types: number[] = Array.from(
+        { length: typesLength },
+        () => Math.floor(Math.random() * 100) + 1,
+      );
+      const item = {
+        R: randomR,
+        C: randomC,
+        id: randomId,
+        types: types,
+      };
+      data.push(item);
+    }
+    return data;
   }
 
-  private async mockMeasure(): Promise<MeasureDataItem[]> {
+  // 模拟测量
+  private async mockMeasure(count: number = 1000): Promise<MeasureDataItem[]> {
     await randomDelay(1500, 2500);
-    return [
-      [1, 2, 3, 4, 5, 6],
-      [6, 5, 4, 3, 2, 1],
-    ];
+    const data: Array<MeasureDataItem> = [];
+    for (let i = 0; i < count; i++) {
+      const arr: Array<number> = [];
+      for (let j = 0; j < 3; j++) {
+        const randomInt: number = Math.floor(Math.random() * 100) + 1;
+        arr.push(randomInt);
+      }
+      for (let j = 0; j < 3; j++) {
+        const randomFloat: number = parseFloat(Math.random().toFixed(4));
+        arr.push(randomFloat);
+      }
+      data.push(arr as MeasureDataItem);
+    }
+    return data;
+  }
+
+  // 模拟坐标上报
+  private mockReportPos() {
+    const idx = Math.floor(Math.random() * 1001);
+    const x = (Math.random() * 200).toFixed(4);
+    const y = (Math.random() * 200).toFixed(4);
+    return {
+      idx: idx,
+      x: parseFloat(x),
+      y: parseFloat(y),
+    };
   }
 
   public async measureRemote(measureParam: MeasureParam) {
@@ -350,6 +388,7 @@ function calcNewMeasureData(
   return newData;
 }
 
+// 测量结果去重
 function deDupMeasureDataList(
   measureDataList: MeasureDataItem[],
 ): MeasureDataItem[] {
@@ -367,6 +406,7 @@ function deDupMeasureDataList(
   return Array.from(map.values());
 }
 
+// 外观检测结果去重
 function deDupAnomalyDataList(anomalyDataList: AnomalyDataItem[]) {
   const map = new Map();
   anomalyDataList.forEach((item) => {
@@ -422,7 +462,9 @@ function exportAnomalyDataList(
   xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   const csvContent = xlsx.write(workbook, { bookType: 'csv', type: 'string' });
   Utils.ensurePathSync(dir);
-  fs.writeFileSync(path.join(dir, name), csvContent);
+  const fullPath = path.join(dir, name);
+  console.log('导出外观检测数据:', fullPath);
+  fs.writeFileSync(fullPath, csvContent);
 }
 
 function exportMeasureDataList(
@@ -436,5 +478,7 @@ function exportMeasureDataList(
   xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   const csvContent = xlsx.write(workbook, { bookType: 'csv', type: 'string' });
   Utils.ensurePathSync(dir);
-  fs.writeFileSync(path.join(dir, name), csvContent);
+  const fullPath = path.join(dir, name);
+  console.log('导出测量数据:', fullPath);
+  fs.writeFileSync(fullPath, csvContent);
 }

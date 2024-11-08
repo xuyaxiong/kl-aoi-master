@@ -4,6 +4,7 @@ import * as dayjs from 'dayjs';
 const path = require('path');
 import { ImagePtr } from 'src/camera/camera.bo';
 import { CapPos } from 'src/plc/plc.bo';
+import { saveImagePtr } from 'src/utils/image_utils';
 
 export enum DetectType {
   ANOMALY, // 外观
@@ -39,7 +40,10 @@ export class DetectInfoQueue {
   private posQueue: ReportPos[] = [];
   private imagePtrQueue: ImagePtr[] = [];
 
-  constructor(private detectCfgLoop: DetectCfg[]) {}
+  constructor(
+    private detectCfgLoop: DetectCfg[],
+    private outputPath: string,
+  ) {}
 
   public addPos(reportPos: ReportPos) {
     this.posQueue.push(reportPos);
@@ -58,18 +62,31 @@ export class DetectInfoQueue {
       const pointIdx = Math.floor(this.imgCnt / this.detectCfgLoop.length);
       const idx = this.imgCnt % this.detectCfgLoop.length;
       const detectCfg = this.detectCfgLoop[idx];
+      const lightType = detectCfg.lightType;
       const detectTypeList = detectCfg.detectTypeList;
       this.imgCnt += 1;
       const pos = this.posQueue.shift();
       const imagePtr = this.imagePtrQueue.shift();
       assert(pos !== undefined, '坐标不能为空');
       assert(imagePtr !== undefined, '图片不能为空');
+      // TODO 此处保存图片
+      let lightName = '';
+      if (lightType === LightType.COAXIAL) {
+        lightName = '同轴';
+      } else if (lightType === LightType.RING) {
+        lightName = '环光';
+      } else {
+        throw new Error('不存在该类型光源');
+      }
+      const imgName = `${imagePtr.frameId}_${pos.x}_${pos.y}.jpg`;
+      const dir = path.join(this.outputPath, lightName);
+      saveImagePtr(imagePtr, dir, imgName);
       const tmpDetectInfoList = [];
       for (const detectType of detectTypeList) {
         tmpDetectInfoList.push({
           pointIdx,
           pos,
-          lightType: detectCfg.lightType,
+          lightType,
           imagePtr,
           detectType,
         });
