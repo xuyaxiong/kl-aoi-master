@@ -4,7 +4,6 @@ type LensParams = FixedLengthArray<number, 13>;
 type MappingParams = FixedLengthArray<number, 9>;
 type RectifyParams = FixedLengthArray<number, 9>;
 type Pos = FixedLengthArray<number, 2>;
-type MeasureData = FixedLengthArray<number, 6>;
 
 interface Buffer {
   toDoubleArr(): number[];

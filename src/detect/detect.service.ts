@@ -1,5 +1,9 @@
 import { Logger, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+const xlsx = require('xlsx');
+const fs = require('fs');
+const path = require('path');
+import * as KLBuffer from 'kl-buffer';
 import { ConfigService } from '@nestjs/config';
 const _ = require('lodash');
 import axios from 'axios';
@@ -8,14 +12,16 @@ import { ImagePtr } from 'src/camera/camera.bo';
 import { PlcService } from 'src/plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
-import { saveTmpImagePtr } from 'src/utils/image_utils';
+import { loadImage, saveTmpImagePtr } from 'src/utils/image_utils';
 import {
+  AnomalyDataItem,
   DetectCfg,
   DetectedCounter,
   DetectInfoQueue,
   DetectType,
   LightType,
   MaterialBO,
+  MeasureDataItem,
   MeasureRemoteCfg,
   RecipeBO,
   ReportPos,
@@ -23,6 +29,7 @@ import {
 import { MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from 'src/db/recipe/recipe.service';
 import { CapPos } from 'src/plc/plc.bo';
+import Utils from 'src/utils/Utils';
 
 enum DetectStatus {
   IDLE,
@@ -42,11 +49,9 @@ export class DetectService {
   private totalAnomalyCnt: number;
   private totalMeasureCnt: number;
   private currImgCnt: number;
-  private anomalyResult: any[];
-  private measureResult: MeasureData[];
   private materialBO: MaterialBO;
   private measureRemoteCfg: MeasureRemoteCfg;
-  private detectStatus: DetectStatus = DetectStatus.IDLE;
+  private detectStatus: DetectStatus = DetectStatus.DETECTING;
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -69,7 +74,7 @@ export class DetectService {
     console.log(this.materialBO);
     this.detectInfoQueue = new DetectInfoQueue(this.detectCfgSeq);
     this.anomalyRawList = [];
-    this.measureResList = [];
+    this.measureRawList = [];
     const totalPointCnt = this.materialBO.recipeBO.totalDotNum;
     const detectCount = this.calcDetectCount(this.detectCfgSeq, totalPointCnt);
     this.totalImgCnt = detectCount.totalImgCnt;
@@ -78,30 +83,43 @@ export class DetectService {
     this.totalMeasureCnt = detectCount.totalMeasureCnt;
     this.currImgCnt = 0;
     this.logger.warn(`******************************`);
-    this.logger.warn(`总点位数:${totalPointCnt}`);
-    this.logger.warn(`总图片数:${this.totalImgCnt}`);
-    this.logger.warn(`总检测数:${this.totalDetectCnt}`);
-    this.logger.warn(`总外观数:${this.totalAnomalyCnt}`);
-    this.logger.warn(`总测量数:${this.totalMeasureCnt}`);
+    this.logger.warn(`总点位数: ${totalPointCnt}`);
+    this.logger.warn(`总图片数: ${this.totalImgCnt}`);
+    this.logger.warn(`总检测数: ${this.totalDetectCnt}`);
+    this.logger.warn(`总外观数: ${this.totalAnomalyCnt}`);
+    this.logger.warn(`总测量数: ${this.totalMeasureCnt}`);
     this.logger.warn(`******************************`);
     this.detectedCounter = new DetectedCounter(
+      totalPointCnt,
       this.totalImgCnt,
       this.totalDetectCnt,
       this.totalAnomalyCnt,
       this.totalMeasureCnt,
       () => {
         // 原始测量结果去重
-        const dedupMeasureDataList = removeDupMeasureDataList(
-          this.measureResult,
+        const dedupMeasureDataList = deDupMeasureDataList(this.measureRawList);
+        console.log('去重后测量结果', dedupMeasureDataList);
+        exportMeasureDataList(
+          'measure.csv',
+          this.materialBO.dataOutputPath,
+          dedupMeasureDataList,
         );
-        console.log(dedupMeasureDataList);
+        // 原始外观结果去重
+        const dedupAnomalyDataList = deDupAnomalyDataList(this.anomalyRawList);
+        console.log('去重后外观结果', dedupAnomalyDataList);
+        exportAnomalyDataList(
+          'anomaly.csv',
+          this.materialBO.dataOutputPath,
+          dedupAnomalyDataList,
+        );
       },
     );
-    this.eventEmitter.emit(`startCorrection`);
+    // this.eventEmitter.emit(`startCorrection`);
+    this.mockImgSeqGenerator(this.totalImgCnt, 300);
   }
 
-  private anomalyRawList: number[][];
-  private measureResList: number[][];
+  private anomalyRawList: AnomalyDataItem[];
+  private measureRawList: MeasureDataItem[];
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr) {
     if (this.detectStatus === DetectStatus.CORRECTION_ONE) {
@@ -133,7 +151,7 @@ export class DetectService {
       });
     } else if (this.detectStatus === DetectStatus.DETECTING) {
       this.currImgCnt += 1;
-      console.log('当前收到图片数量:', this.currImgCnt);
+      this.logger.log(`当前收到图片数量: ${this.currImgCnt}`);
       this.detectInfoQueue.addImagePtr(imagePtr);
       this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
       // const imagePath = saveTmpImagePtr(imagePtr);
@@ -143,10 +161,10 @@ export class DetectService {
         // console.log('detectInfoList =', detectInfoList);
         for (const detectInfo of detectInfoList) {
           const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
-          this.logger.verbose(
-            `点位:${pointIdx}
-光源类型:${lightType === LightType.COAXIAL ? '同轴' : '环光'}
-检测类型:${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
+          this.logger.log(
+            `\n点位: ${pointIdx}
+光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'}
+检测类型: ${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
@@ -156,15 +174,30 @@ export class DetectService {
           } else if (detectType === DetectType.MEASURE) {
             // 送测量
             const measureRes = await this.mockMeasure();
-            this.measureResList.push(...measureRes);
+            this.measureRawList.push(...measureRes);
             this.detectedCounter.plusMeasureCnt();
           }
-          console.log(this.detectedCounter.toString());
           // console.log('anomalyRawList =', this.anomalyRawList);
           // console.log('measureResList =', this.measureResList);
         }
       }
     }
+  }
+
+  private mockImgSeqGenerator(imgNum: number, delay: number = 1_000) {
+    const [width, height, channel] = [5120, 5120, 3];
+    let fno = 0;
+    const handle = setInterval(() => {
+      const imgPtr = loadImgPtr(
+        'C:\\Users\\xuyax\\Desktop\\test_measure_data\\2_96.40910339355469_40.311100006103516_0.jpg',
+        width,
+        height,
+        channel,
+        fno++,
+      );
+      this.eventEmitter.emit(`camera.grabbed`, imgPtr);
+      if (fno >= imgNum) clearInterval(handle);
+    }, delay);
   }
 
   private setReportDataHandler() {
@@ -251,15 +284,25 @@ export class DetectService {
     };
   }
 
-  private async mockAnomaly() {
+  private async mockAnomaly(): Promise<AnomalyDataItem[]> {
     await randomDelay(2000, 3000);
     return [
-      [1, 2, 3, 4, 5, 6],
-      [6, 5, 4, 3, 2, 1],
+      {
+        R: 1,
+        C: 2,
+        id: 3,
+        types: [4],
+      },
+      {
+        R: 4,
+        C: 3,
+        id: 2,
+        types: [1],
+      },
     ];
   }
 
-  private async mockMeasure() {
+  private async mockMeasure(): Promise<MeasureDataItem[]> {
     await randomDelay(1500, 2500);
     return [
       [1, 2, 3, 4, 5, 6],
@@ -300,13 +343,16 @@ function byteArrToFloat(bytes: number[]): number {
 }
 
 // TODO 测量数据合并策略
-function calcNewMeasureData(existingData: MeasureData, newData: MeasureData) {
+function calcNewMeasureData(
+  existingData: MeasureDataItem,
+  newData: MeasureDataItem,
+) {
   return newData;
 }
 
-function removeDupMeasureDataList(
-  measureDataList: MeasureData[],
-): MeasureData[] {
+function deDupMeasureDataList(
+  measureDataList: MeasureDataItem[],
+): MeasureDataItem[] {
   const map = new Map();
   measureDataList.forEach((item) => {
     const key = `${item[0]}-${item[1]}-${item[2]}`;
@@ -319,4 +365,76 @@ function removeDupMeasureDataList(
     }
   });
   return Array.from(map.values());
+}
+
+function deDupAnomalyDataList(anomalyDataList: AnomalyDataItem[]) {
+  const map = new Map();
+  anomalyDataList.forEach((item) => {
+    const key = `${item.R}-${item.C}-${item.id}`;
+    if (map.has(key)) {
+      const existingItem = map.get(key);
+      item.types.forEach((type) => existingItem.types.add(type));
+    } else {
+      map.set(key, { ...item, types: new Set(item.types) });
+    }
+  });
+  return Array.from(map.values()).map((item) => ({
+    ...item,
+    types: Array.from(item.types),
+  }));
+}
+
+function loadImgPtr(
+  path: string,
+  width: number,
+  height: number,
+  channel: number,
+  fno: number,
+) {
+  const img = loadImage(path, width, height, channel);
+  const klBuffer = KLBuffer.alloc(width * height * channel, img.buffer);
+  const imagePtr: ImagePtr = new ImagePtr(
+    [klBuffer.ptrVal, klBuffer.size],
+    width,
+    height,
+    channel,
+    fno,
+  );
+  return imagePtr;
+}
+
+function exportAnomalyDataList(
+  name: string,
+  dir: string,
+  data: AnomalyDataItem[],
+) {
+  const formattedData = data.map((item) => ({
+    ...item,
+    types: item.types.join(','),
+  }));
+
+  const sheetData = [
+    ['R', 'C', 'ID', 'Types'],
+    ...formattedData.map((item) => [item.R, item.C, item.id, item.types]),
+  ];
+  const workbook = xlsx.utils.book_new();
+  const worksheet = xlsx.utils.aoa_to_sheet(sheetData);
+  xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+  const csvContent = xlsx.write(workbook, { bookType: 'csv', type: 'string' });
+  Utils.ensurePathSync(dir);
+  fs.writeFileSync(path.join(dir, name), csvContent);
+}
+
+function exportMeasureDataList(
+  name: string,
+  dir: string,
+  data: MeasureDataItem[],
+) {
+  const sheetData = [['R', 'C', 'ID', 'dx', 'dy', 'dr'], ...data];
+  const workbook = xlsx.utils.book_new();
+  const worksheet = xlsx.utils.aoa_to_sheet(sheetData);
+  xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+  const csvContent = xlsx.write(workbook, { bookType: 'csv', type: 'string' });
+  Utils.ensurePathSync(dir);
+  fs.writeFileSync(path.join(dir, name), csvContent);
 }

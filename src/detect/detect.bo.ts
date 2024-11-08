@@ -86,6 +86,7 @@ export class DetectedCounter {
   private measure: number = 0;
 
   constructor(
+    private totalPointCnt: number,
     private totalImgCnt: number,
     private totalDetectCnt: number,
     private totalAnomalyCnt: number,
@@ -96,6 +97,7 @@ export class DetectedCounter {
   public plusAnomalyCnt() {
     this.anomaly++;
     this.total++;
+    console.log(this.toString());
     if (this.isDone()) {
       console.log('检测完成');
       this.callback?.();
@@ -105,6 +107,7 @@ export class DetectedCounter {
   public plusMeasureCnt() {
     this.measure++;
     this.total++;
+    console.log(this.toString());
     if (this.isDone()) {
       console.log('检测完成');
       this.callback?.();
@@ -117,10 +120,11 @@ export class DetectedCounter {
 
   public toString(): string {
     return `${chalk.cyan.bold('******************************')}
-${chalk.cyan.bold('图片总数')}:${chalk.green.bold(this.totalImgCnt)}
-${chalk.cyan.bold('检测总数')}:${chalk.magenta.bold(this.total)}/${chalk.green.bold(this.totalDetectCnt)}
-${chalk.cyan.bold('外观总数')}:${chalk.magenta.bold(this.anomaly)}/${chalk.green.bold(this.totalAnomalyCnt)}
-${chalk.cyan.bold('测量总数')}:${chalk.magenta.bold(this.measure)}/${chalk.green.bold(this.totalMeasureCnt)}
+${chalk.cyan.bold('点位总数')}: ${chalk.green.bold(this.totalPointCnt)}
+${chalk.cyan.bold('图片总数')}: ${chalk.green.bold(this.totalImgCnt)}
+${chalk.cyan.bold('检测总数')}: ${chalk.magenta.bold(this.total)}/${chalk.green.bold(this.totalDetectCnt)}
+${chalk.cyan.bold('外观总数')}: ${chalk.magenta.bold(this.anomaly)}/${chalk.green.bold(this.totalAnomalyCnt)}
+${chalk.cyan.bold('测量总数')}: ${chalk.magenta.bold(this.measure)}/${chalk.green.bold(this.totalMeasureCnt)}
 ${chalk.cyan.bold('******************************')}`;
   }
 }
@@ -189,4 +193,12 @@ export class MaterialBO {
       this.id,
     );
   }
+}
+
+export type MeasureDataItem = FixedLengthArray<number, 6>;
+export interface AnomalyDataItem {
+  R: number;
+  C: number;
+  id: number;
+  types: number[];
 }
