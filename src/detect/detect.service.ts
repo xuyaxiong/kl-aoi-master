@@ -78,11 +78,11 @@ export class DetectService {
     this.totalMeasureCnt = detectCount.totalMeasureCnt;
     this.currImgCnt = 0;
     this.logger.warn(`******************************`);
-    this.logger.warn(`总点位数：${totalPointCnt}`);
-    this.logger.warn(`总图片数：${this.totalImgCnt}`);
-    this.logger.warn(`总检测数：${this.totalDetectCnt}`);
-    this.logger.warn(`总外观数：${this.totalAnomalyCnt}`);
-    this.logger.warn(`总测量数：${this.totalMeasureCnt}`);
+    this.logger.warn(`总点位数:${totalPointCnt}`);
+    this.logger.warn(`总图片数:${this.totalImgCnt}`);
+    this.logger.warn(`总检测数:${this.totalDetectCnt}`);
+    this.logger.warn(`总外观数:${this.totalAnomalyCnt}`);
+    this.logger.warn(`总测量数:${this.totalMeasureCnt}`);
     this.logger.warn(`******************************`);
     this.detectedCounter = new DetectedCounter(
       this.totalImgCnt,
@@ -133,7 +133,7 @@ export class DetectService {
       });
     } else if (this.detectStatus === DetectStatus.DETECTING) {
       this.currImgCnt += 1;
-      console.log('当前收到图片数量：', this.currImgCnt);
+      console.log('当前收到图片数量:', this.currImgCnt);
       this.detectInfoQueue.addImagePtr(imagePtr);
       this.detectInfoQueue.addPos({ idx: 0, x: 99, y: 100 });
       // const imagePath = saveTmpImagePtr(imagePtr);
@@ -144,9 +144,9 @@ export class DetectService {
         for (const detectInfo of detectInfoList) {
           const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
           this.logger.verbose(
-            `点位：${pointIdx}
-光源类型：${lightType === LightType.COAXIAL ? '同轴' : '环光'}
-检测类型：${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
+            `点位:${pointIdx}
+光源类型:${lightType === LightType.COAXIAL ? '同轴' : '环光'}
+检测类型:${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测

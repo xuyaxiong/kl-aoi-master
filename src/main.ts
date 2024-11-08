@@ -6,9 +6,15 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptor/logging.interceptor';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WsAdapter } from '@nestjs/platform-ws';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+import 'winston-daily-rotate-file';
+const chalk = require('chalk');
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: configLogger(),
+  });
   app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('/api');
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -49,5 +55,37 @@ function dllDump(port: number) {
 
   procdump.on('exit', (code) => {
     console.log('procdump_exit', `Child exited with code ${code}`);
+  });
+}
+
+function configLogger() {
+  const dailyRotateFileTransport = new winston.transports.DailyRotateFile({
+    dirname: 'D:\\kl-storage\\app-logs',
+    filename: 'application-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+    format: winston.format.combine(
+      winston.format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss',
+      }),
+      winston.format.printf(({ timestamp, level, message, context }) => {
+        return `[${timestamp}] ${level.toUpperCase()} [${context || 'App'}]: ${message}`;
+      }),
+    ),
+  });
+  return WinstonModule.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+      winston.format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss',
+      }),
+      winston.format.printf(({ level, message, timestamp, context }) => {
+        const formatContext = chalk.yellow(`[${context}]`);
+        return `[${timestamp}] ${level} ${formatContext}: ${message}`;
+      }),
+    ),
+    transports: [dailyRotateFileTransport, new winston.transports.Console()],
   });
 }

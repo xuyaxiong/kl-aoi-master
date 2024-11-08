@@ -41,11 +41,14 @@
     "lodash": "^4.17.21",
     "mariadb": "^3.4.0",
     "mysql": "^2.18.1",
+    "nest-winston": "^1.9.7",
     "ref-napi": "^3.0.3",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.1",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "winston": "^3.16.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
