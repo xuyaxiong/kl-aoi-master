@@ -10,6 +10,7 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 const chalk = require('chalk');
+const figlet = require('figlet');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -21,9 +22,22 @@ async function bootstrap() {
   swaggerDoc(app);
   dllDump(process.pid);
   await app.listen(process.env.PORT ?? 3000);
+  slogan('KOALA AOI');
 }
 
 bootstrap();
+
+function slogan(text: string) {
+  console.log(
+    chalk.blue(
+      figlet.textSync(text, {
+        horizontalLayout: 'default',
+        verticalLayout: 'default',
+        width: 100,
+      }),
+    ),
+  );
+}
 
 function swaggerDoc(app) {
   const config = new DocumentBuilder()
