@@ -22,6 +22,25 @@ export function loadImage(
   };
 }
 
+export function loadImagePtr(
+  path: string,
+  width: number,
+  height: number,
+  channel: number,
+  fno: number,
+) {
+  const img = loadImage(path, width, height, channel);
+  const klBuffer = KLBuffer.alloc(width * height * channel, img.buffer);
+  const imagePtr: ImagePtr = new ImagePtr(
+    [klBuffer.ptrVal, klBuffer.size],
+    width,
+    height,
+    channel,
+    fno,
+  );
+  return imagePtr;
+}
+
 export function saveImagePtr(
   imagePtr: ImagePtr,
   dir: string,

@@ -1,11 +1,7 @@
 import { Logger, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-const xlsx = require('xlsx');
-const fs = require('fs');
-const path = require('path');
 import * as KLBuffer from 'kl-buffer';
 import { ConfigService } from '@nestjs/config';
-const _ = require('lodash');
 import axios from 'axios';
 import '../extension';
 import { ImagePtr } from 'src/camera/camera.bo';
@@ -13,6 +9,12 @@ import { PlcService } from 'src/plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
 import { loadImage, saveTmpImagePtr } from 'src/utils/image_utils';
+import {
+  mockReportPos,
+  mockImgSeqGenerator,
+  mockAnomaly,
+  mockMeasure,
+} from './detect.mock';
 import {
   AnomalyDataItem,
   DetectCfg,
@@ -24,12 +26,17 @@ import {
   MeasureDataItem,
   MeasureRemoteCfg,
   RecipeBO,
-  ReportPos,
 } from './detect.bo';
 import { MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from 'src/db/recipe/recipe.service';
 import { CapPos } from 'src/plc/plc.bo';
-import Utils from 'src/utils/Utils';
+import {
+  deDupAnomalyDataList,
+  deDupMeasureDataList,
+  exportAnomalyDataList,
+  exportMeasureDataList,
+  parseReportPos,
+} from './detect.utils';
 
 enum DetectStatus {
   IDLE,
@@ -101,8 +108,12 @@ export class DetectService {
       () => {
         // 原始测量结果去重
         const dedupMeasureDataList = deDupMeasureDataList(this.measureRawList);
-        console.log('去重前测量结果', this.measureRawList.length);
-        console.log('去重后测量结果', dedupMeasureDataList.length);
+        console.log('去重前测量结果:', this.measureRawList.length);
+        console.log('去重后测量结果:', dedupMeasureDataList.length);
+        console.log(
+          '测量去重数量:',
+          this.measureRawList.length - dedupMeasureDataList.length,
+        );
         exportMeasureDataList(
           'measure.csv',
           this.materialBO.dataOutputPath,
@@ -110,8 +121,12 @@ export class DetectService {
         );
         // 原始外观结果去重
         const dedupAnomalyDataList = deDupAnomalyDataList(this.anomalyRawList);
-        console.log('去重前外观结果', this.anomalyRawList.length);
-        console.log('去重后外观结果', dedupAnomalyDataList.length);
+        console.log('去重前外观结果:', this.anomalyRawList.length);
+        console.log('去重后外观结果:', dedupAnomalyDataList.length);
+        console.log(
+          '外观去重数量:',
+          this.anomalyRawList.length - dedupAnomalyDataList.length,
+        );
         exportAnomalyDataList(
           'anomaly.csv',
           this.materialBO.dataOutputPath,
@@ -120,7 +135,7 @@ export class DetectService {
       },
     );
     // this.eventEmitter.emit(`startCorrection`);
-    this.mockImgSeqGenerator(this.totalImgCnt, 300);
+    mockImgSeqGenerator(this.eventEmitter, this.totalImgCnt, 300);
   }
 
   private anomalyRawList: AnomalyDataItem[];
@@ -158,7 +173,7 @@ export class DetectService {
       this.currImgCnt += 1;
       this.logger.log(`当前收到图片数量: ${this.currImgCnt}`);
       this.detectInfoQueue.addImagePtr(imagePtr);
-      this.detectInfoQueue.addPos(this.mockReportPos()); // TODO 随机坐标
+      this.detectInfoQueue.addPos(mockReportPos()); // TODO 随机坐标
       // const imagePath = saveTmpImagePtr(imagePtr);
       // console.log(imagePath);
       while (!this.detectInfoQueue.isEmpty()) {
@@ -173,12 +188,12 @@ export class DetectService {
           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
-            const anomalyRes = await this.mockAnomaly();
+            const anomalyRes = await mockAnomaly();
             this.anomalyRawList.push(...anomalyRes);
             this.detectedCounter.plusAnomalyCnt();
           } else if (detectType === DetectType.MEASURE) {
             // 送测量
-            const measureRes = await this.mockMeasure();
+            const measureRes = await mockMeasure();
             this.measureRawList.push(...measureRes);
             this.detectedCounter.plusMeasureCnt();
           }
@@ -187,23 +202,6 @@ export class DetectService {
         }
       }
     }
-  }
-
-  // 模拟相机出图
-  private mockImgSeqGenerator(imgNum: number, delay: number = 1_000) {
-    const [width, height, channel] = [5120, 5120, 3];
-    let fno = 0;
-    const handle = setInterval(() => {
-      const imgPtr = loadImgPtr(
-        'C:\\Users\\xuyax\\Desktop\\test_measure_data\\2_96.40910339355469_40.311100006103516_0.jpg',
-        width,
-        height,
-        channel,
-        fno++,
-      );
-      this.eventEmitter.emit(`camera.grabbed`, imgPtr);
-      if (fno >= imgNum) clearInterval(handle);
-    }, delay);
   }
 
   // 处理上报数据
@@ -293,61 +291,6 @@ export class DetectService {
     };
   }
 
-  // 模拟外观检测
-  private async mockAnomaly(count: number = 1000): Promise<AnomalyDataItem[]> {
-    await randomDelay(2000, 3000);
-    const data: Array<AnomalyDataItem> = [];
-    for (let i = 0; i < count; i++) {
-      const randomR: number = Math.floor(Math.random() * 100) + 1;
-      const randomC: number = Math.floor(Math.random() * 100) + 1;
-      const randomId: number = Math.floor(Math.random() * 100) + 1;
-      const typesLength: number = Math.floor(Math.random() * 5) + 1;
-      const types: number[] = Array.from(
-        { length: typesLength },
-        () => Math.floor(Math.random() * 100) + 1,
-      );
-      const item = {
-        R: randomR,
-        C: randomC,
-        id: randomId,
-        types: types,
-      };
-      data.push(item);
-    }
-    return data;
-  }
-
-  // 模拟测量
-  private async mockMeasure(count: number = 1000): Promise<MeasureDataItem[]> {
-    await randomDelay(1500, 2500);
-    const data: Array<MeasureDataItem> = [];
-    for (let i = 0; i < count; i++) {
-      const arr: Array<number> = [];
-      for (let j = 0; j < 3; j++) {
-        const randomInt: number = Math.floor(Math.random() * 100) + 1;
-        arr.push(randomInt);
-      }
-      for (let j = 0; j < 3; j++) {
-        const randomFloat: number = parseFloat(Math.random().toFixed(4));
-        arr.push(randomFloat);
-      }
-      data.push(arr as MeasureDataItem);
-    }
-    return data;
-  }
-
-  // 模拟坐标上报
-  private mockReportPos() {
-    const idx = Math.floor(Math.random() * 1001);
-    const x = (Math.random() * 200).toFixed(4);
-    const y = (Math.random() * 200).toFixed(4);
-    return {
-      idx: idx,
-      x: parseFloat(x),
-      y: parseFloat(y),
-    };
-  }
-
   public async measureRemote(measureParam: MeasureParam) {
     const measureUrl = `${this.measureRemoteCfg.host}:${this.measureRemoteCfg.port}/measure/measure`;
     try {
@@ -358,127 +301,4 @@ export class DetectService {
       console.error('error:', error);
     }
   }
-}
-
-function randomDelay(min: number, max: number): Promise<void> {
-  const delay = Math.floor(Math.random() * (max - min + 1)) + min;
-  return new Promise((resolve) => setTimeout(resolve, delay));
-}
-
-function parseReportPos(posDataArr: number[]): ReportPos {
-  posDataArr = _.drop(posDataArr, 6);
-  posDataArr = _.dropRight(posDataArr, 2);
-  const idx = posDataArr[0] + posDataArr[1] * 256;
-  const x = byteArrToFloat(_.slice(posDataArr, 2, 6));
-  const y = byteArrToFloat(_.slice(posDataArr, 6, 10));
-  return { idx, x, y };
-}
-
-function byteArrToFloat(bytes: number[]): number {
-  const buffer = new Uint8Array(bytes).buffer;
-  const view = new DataView(buffer);
-  return view.getFloat32(0, false);
-}
-
-// TODO 测量数据合并策略
-function calcNewMeasureData(
-  existingData: MeasureDataItem,
-  newData: MeasureDataItem,
-) {
-  return newData;
-}
-
-// 测量结果去重
-function deDupMeasureDataList(
-  measureDataList: MeasureDataItem[],
-): MeasureDataItem[] {
-  const map = new Map();
-  measureDataList.forEach((item) => {
-    const key = `${item[0]}-${item[1]}-${item[2]}`;
-    if (map.has(key)) {
-      const existingItem = map.get(key);
-      const finalItem = calcNewMeasureData(existingItem, item);
-      map.set(key, finalItem);
-    } else {
-      map.set(key, item);
-    }
-  });
-  return Array.from(map.values());
-}
-
-// 外观检测结果去重
-function deDupAnomalyDataList(anomalyDataList: AnomalyDataItem[]) {
-  const map = new Map();
-  anomalyDataList.forEach((item) => {
-    const key = `${item.R}-${item.C}-${item.id}`;
-    if (map.has(key)) {
-      const existingItem = map.get(key);
-      item.types.forEach((type) => existingItem.types.add(type));
-    } else {
-      map.set(key, { ...item, types: new Set(item.types) });
-    }
-  });
-  return Array.from(map.values()).map((item) => ({
-    ...item,
-    types: Array.from(item.types),
-  }));
-}
-
-function loadImgPtr(
-  path: string,
-  width: number,
-  height: number,
-  channel: number,
-  fno: number,
-) {
-  const img = loadImage(path, width, height, channel);
-  const klBuffer = KLBuffer.alloc(width * height * channel, img.buffer);
-  const imagePtr: ImagePtr = new ImagePtr(
-    [klBuffer.ptrVal, klBuffer.size],
-    width,
-    height,
-    channel,
-    fno,
-  );
-  return imagePtr;
-}
-
-function exportAnomalyDataList(
-  name: string,
-  dir: string,
-  data: AnomalyDataItem[],
-) {
-  const formattedData = data.map((item) => ({
-    ...item,
-    types: item.types.join(','),
-  }));
-
-  const sheetData = [
-    ['R', 'C', 'ID', 'Types'],
-    ...formattedData.map((item) => [item.R, item.C, item.id, item.types]),
-  ];
-  const workbook = xlsx.utils.book_new();
-  const worksheet = xlsx.utils.aoa_to_sheet(sheetData);
-  xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-  const csvContent = xlsx.write(workbook, { bookType: 'csv', type: 'string' });
-  Utils.ensurePathSync(dir);
-  const fullPath = path.join(dir, name);
-  console.log('导出外观检测数据:', fullPath);
-  fs.writeFileSync(fullPath, csvContent);
-}
-
-function exportMeasureDataList(
-  name: string,
-  dir: string,
-  data: MeasureDataItem[],
-) {
-  const sheetData = [['R', 'C', 'ID', 'dx', 'dy', 'dr'], ...data];
-  const workbook = xlsx.utils.book_new();
-  const worksheet = xlsx.utils.aoa_to_sheet(sheetData);
-  xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-  const csvContent = xlsx.write(workbook, { bookType: 'csv', type: 'string' });
-  Utils.ensurePathSync(dir);
-  const fullPath = path.join(dir, name);
-  console.log('导出测量数据:', fullPath);
-  fs.writeFileSync(fullPath, csvContent);
 }

@@ -5,6 +5,7 @@ const path = require('path');
 import { ImagePtr } from 'src/camera/camera.bo';
 import { CapPos } from 'src/plc/plc.bo';
 import { saveImagePtr } from 'src/utils/image_utils';
+import Utils from 'src/utils/Utils';
 
 export enum DetectType {
   ANOMALY, // 外观
@@ -116,7 +117,7 @@ export class DetectedCounter {
     this.total++;
     console.log(this.toString());
     if (this.isDone()) {
-      console.log('检测完成');
+      Utils.figText('DETECT DONE');
       this.callback?.();
     }
   }
@@ -126,7 +127,7 @@ export class DetectedCounter {
     this.total++;
     console.log(this.toString());
     if (this.isDone()) {
-      console.log('检测完成');
+      Utils.figText('DETECT DONE');
       this.callback?.();
     }
   }
