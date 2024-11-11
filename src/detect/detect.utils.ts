@@ -5,6 +5,11 @@ const _ = require('lodash');
 import Utils from 'src/utils/Utils';
 import { AnomalyDataItem, MeasureDataItem, ReportPos } from './detect.bo';
 
+export function objToFile(obj: object, dir: string, name: string) {
+  Utils.ensurePathSync(dir);
+  fs.appendFile(path.join(dir, name), `${JSON.stringify(obj)}`, () => {});
+}
+
 export function parseReportPos(posDataArr: number[]): ReportPos {
   posDataArr = _.drop(posDataArr, 6);
   posDataArr = _.dropRight(posDataArr, 2);

@@ -3,6 +3,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import * as KLBuffer from 'kl-buffer';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+const path = require('path');
 import '../extension';
 import { ImagePtr } from 'src/camera/camera.bo';
 import { PlcService } from 'src/plc/plc.service';
@@ -14,9 +15,12 @@ import {
   mockImgSeqGenerator,
   mockAnomaly,
   mockMeasure,
+  mockMeasureParam,
+  mockAnomalyParam,
 } from './detect.mock';
 import {
   AnomalyDataItem,
+  AnomalyRemoteCfg,
   DetectCfg,
   DetectedCounter,
   DetectInfoQueue,
@@ -27,7 +31,7 @@ import {
   MeasureRemoteCfg,
   RecipeBO,
 } from './detect.bo';
-import { MeasureParam, StartParam } from './detect.param';
+import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from 'src/db/recipe/recipe.service';
 import { CapPos } from 'src/plc/plc.bo';
 import {
@@ -35,6 +39,7 @@ import {
   deDupMeasureDataList,
   exportAnomalyDataList,
   exportMeasureDataList,
+  objToFile,
   parseReportPos,
 } from './detect.utils';
 
@@ -58,6 +63,7 @@ export class DetectService {
   private currImgCnt: number;
   private materialBO: MaterialBO;
   private measureRemoteCfg: MeasureRemoteCfg;
+  private anomalyRemoteCfg: AnomalyRemoteCfg;
   private detectStatus: DetectStatus = DetectStatus.DETECTING;
 
   constructor(
@@ -69,6 +75,8 @@ export class DetectService {
   ) {
     this.measureRemoteCfg =
       this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
+    this.anomalyRemoteCfg =
+      this.configService.get<AnomalyRemoteCfg>('anomalyRemoteCfg');
     this.detectCfgSeq = this.configService.get<DetectCfg[]>('detectCfgSeq');
     console.log('detectCfgSeq =', this.detectCfgSeq);
     this.setReportDataHandler();
@@ -138,6 +146,16 @@ export class DetectService {
     mockImgSeqGenerator(this.eventEmitter, this.totalImgCnt, 300);
   }
 
+  @OnEvent('startCorrection')
+  private async correctionTrigger() {
+    // 1. 切换到纠偏1状态
+    this.detectStatus = DetectStatus.CORRECTION_ONE;
+    // 1.1. 运动至纠偏点位1
+    await this.moveToXY(this.materialBO.recipeBO.correctionPos1);
+    // 1.2. 触发拍照
+    await this.plcService.takePhoto();
+  }
+
   private anomalyRawList: AnomalyDataItem[];
   private measureRawList: MeasureDataItem[];
   @OnEvent('camera.grabbed')
@@ -188,12 +206,15 @@ export class DetectService {
           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
-            const anomalyRes = await mockAnomaly();
+            const {
+              anomalyList: anomalyRes,
+              flawList,
+            } = await this.anomalyRemote(null); // TODO flawList 需插入数据库
             this.anomalyRawList.push(...anomalyRes);
             this.detectedCounter.plusAnomalyCnt();
           } else if (detectType === DetectType.MEASURE) {
             // 送测量
-            const measureRes = await mockMeasure();
+            const measureRes = await this.measureRemote(null);
             this.measureRawList.push(...measureRes);
             this.detectedCounter.plusMeasureCnt();
           }
@@ -223,16 +244,6 @@ export class DetectService {
     const recipe = await this.recipeService.findById(recipeId);
     const recipeBO = new RecipeBO(recipeId, recipe.name, recipe.config);
     return new MaterialBO(sn, recipeBO);
-  }
-
-  @OnEvent('startCorrection')
-  private async correctionTrigger() {
-    // 1. 切换到纠偏1状态
-    this.detectStatus = DetectStatus.CORRECTION_ONE;
-    // 1.1. 运动至纠偏点位1
-    await this.moveToXY(this.materialBO.recipeBO.correctionPos1);
-    // 1.2. 触发拍照
-    await this.plcService.takePhoto();
   }
 
   // 运动到该位置
@@ -294,7 +305,30 @@ export class DetectService {
   public async measureRemote(measureParam: MeasureParam) {
     const measureUrl = `${this.measureRemoteCfg.host}:${this.measureRemoteCfg.port}/measure/measure`;
     try {
-      const res = await axios.post(measureUrl, measureParam);
+      const param = mockMeasureParam();
+      objToFile(
+        param,
+        path.join(this.materialBO.detectParamPath, 'measureParams'),
+        `${param.fno}.json`,
+      );
+      const res = await axios.post(measureUrl, param); // TODO mock请求参数
+      const data = res.data.data;
+      return data;
+    } catch (error) {
+      console.error('error:', error);
+    }
+  }
+
+  public async anomalyRemote(anomalyParam: AnomalyParam) {
+    const anomalyUrl = `${this.anomalyRemoteCfg.host}:${this.anomalyRemoteCfg.port}/anomaly/anomaly`;
+    try {
+      const param = mockAnomalyParam();
+      objToFile(
+        param,
+        path.join(this.materialBO.detectParamPath, 'anomalyParams'),
+        `${param.fno}.json`,
+      );
+      const res = await axios.post(anomalyUrl, param); // TODO mock请求参数
       const data = res.data.data;
       return data;
     } catch (error) {

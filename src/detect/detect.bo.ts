@@ -80,8 +80,9 @@ export class DetectInfoQueue {
         throw new Error('不存在该类型光源');
       }
       const imgName = `${imagePtr.frameId}_${pos.x}_${pos.y}.jpg`;
-      const dir = path.join(this.outputPath, lightName);
-      saveImagePtr(imagePtr, dir, imgName);
+      const dir = path.join(this.outputPath, 'imgs', `${idx}.${lightName}`);
+      const fullpath = saveImagePtr(imagePtr, dir, imgName);
+      console.log(`保存图片至: ${fullpath}`);
       const tmpDetectInfoList = [];
       for (const detectType of detectTypeList) {
         tmpDetectInfoList.push({
@@ -102,6 +103,7 @@ export class DetectedCounter {
   private total: number = 0;
   private anomaly: number = 0;
   private measure: number = 0;
+  private startTime = Date.now();
 
   constructor(
     private totalPointCnt: number,
@@ -117,8 +119,7 @@ export class DetectedCounter {
     this.total++;
     console.log(this.toString());
     if (this.isDone()) {
-      Utils.figText('DETECT DONE');
-      this.callback?.();
+      this.afterDetectDone();
     }
   }
 
@@ -127,13 +128,18 @@ export class DetectedCounter {
     this.total++;
     console.log(this.toString());
     if (this.isDone()) {
-      Utils.figText('DETECT DONE');
-      this.callback?.();
+      this.afterDetectDone();
     }
   }
 
   private isDone() {
     return this.total === this.totalDetectCnt;
+  }
+
+  private afterDetectDone() {
+    Utils.figText('DETECT DONE');
+    console.log(`检测耗时: ${(Date.now() - this.startTime) / 1000}s`);
+    this.callback?.();
   }
 
   public toString(): string {
@@ -148,6 +154,11 @@ ${chalk.cyan.bold('******************************')}`;
 }
 
 export interface MeasureRemoteCfg {
+  host: string;
+  port: number;
+}
+
+export interface AnomalyRemoteCfg {
   host: string;
   port: number;
 }
@@ -191,6 +202,7 @@ export class MaterialBO {
   public readonly startTime: Date;
   public readonly outputPath: string;
   public readonly dataOutputPath: string;
+  public readonly detectParamPath: string;
 
   constructor(
     private readonly sn: string,
@@ -210,6 +222,7 @@ export class MaterialBO {
       this.sn,
       this.id,
     );
+    this.detectParamPath = path.join(this.outputPath, 'detectParams');
   }
 }
 
@@ -219,4 +232,10 @@ export interface AnomalyDataItem {
   C: number;
   id: number;
   types: number[];
+}
+
+export interface ShieldInfo {
+  path: string;
+  col: number;
+  row: number;
 }
