@@ -206,10 +206,8 @@ export class DetectService {
           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
-            const {
-              anomalyList: anomalyRes,
-              flawList,
-            } = await this.anomalyRemote(null); // TODO flawList 需插入数据库
+            const { anomalyList: anomalyRes, flawList } =
+              await this.anomalyRemote(null); // TODO flawList 需插入数据库
             this.anomalyRawList.push(...anomalyRes);
             this.detectedCounter.plusAnomalyCnt();
           } else if (detectType === DetectType.MEASURE) {
@@ -315,7 +313,8 @@ export class DetectService {
       const data = res.data.data;
       return data;
     } catch (error) {
-      console.error('error:', error);
+      this.logger.error(`${error.message}`);
+      return [];
     }
   }
 
@@ -332,7 +331,11 @@ export class DetectService {
       const data = res.data.data;
       return data;
     } catch (error) {
-      console.error('error:', error);
+      this.logger.error(`${error.message}`);
+      return {
+        flawList: [],
+        anomalyList: [],
+      };
     }
   }
 }
