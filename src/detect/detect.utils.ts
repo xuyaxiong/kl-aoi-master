@@ -7,7 +7,11 @@ import { AnomalyDataItem, MeasureDataItem, ReportPos } from './detect.bo';
 
 export function objToFile(obj: object, dir: string, name: string) {
   Utils.ensurePathSync(dir);
-  fs.appendFile(path.join(dir, name), `${JSON.stringify(obj)}`, () => {});
+  fs.appendFile(
+    path.join(dir, name),
+    `${JSON.stringify(obj, null, 4)}`,
+    () => {},
+  );
 }
 
 export function parseReportPos(posDataArr: number[]): ReportPos {
