@@ -199,8 +199,10 @@ export class DetectService {
         // console.log('detectInfoList =', detectInfoList);
         for (const detectInfo of detectInfoList) {
           const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
+          const fno = imagePtr.frameId;
           this.logger.log(
             `\n点位: ${pointIdx}
+出图帧号：${fno}
 光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'}
 检测类型: ${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
           );

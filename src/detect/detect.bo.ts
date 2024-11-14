@@ -40,6 +40,7 @@ export class DetectInfoQueue {
   private imgCnt = 0;
   private posQueue: ReportPos[] = [];
   private imagePtrQueue: ImagePtr[] = [];
+  private imagePtrMap = new Map<number, ImagePtr>();
 
   constructor(
     private detectCfgLoop: DetectCfg[],
@@ -70,6 +71,8 @@ export class DetectInfoQueue {
       const imagePtr = this.imagePtrQueue.shift();
       assert(pos !== undefined, '坐标不能为空');
       assert(imagePtr !== undefined, '图片不能为空');
+      // 缓存图片指针，数据合并完成后截取缺陷小图用
+      this.imagePtrMap.set(imagePtr.frameId, imagePtr);
       // TODO 此处保存图片
       let lightName = '';
       if (lightType === LightType.COAXIAL) {
@@ -226,8 +229,10 @@ export class MaterialBO {
   }
 }
 
-export type MeasureDataItem = FixedLengthArray<number, 6>;
+// [fno, R, C, chipId, dx, dy, dr] 七元组
+export type MeasureDataItem = FixedLengthArray<number, 7>;
 export interface AnomalyDataItem {
+  fno: number;
   R: number;
   C: number;
   id: number;

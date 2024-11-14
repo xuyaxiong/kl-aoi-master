@@ -44,6 +44,7 @@ export async function mockAnomaly(
   await randomDelay(2000, 3000);
   const data: Array<AnomalyDataItem> = [];
   for (let i = 0; i < count; i++) {
+    const randomFno: number = Math.floor(Math.random() * 100) + 1;
     const randomR: number = Math.floor(Math.random() * 100) + 1;
     const randomC: number = Math.floor(Math.random() * 100) + 1;
     const randomId: number = Math.floor(Math.random() * 100) + 1;
@@ -53,6 +54,7 @@ export async function mockAnomaly(
       () => Math.floor(Math.random() * 100) + 1,
     );
     const item = {
+      fno: randomFno,
       R: randomR,
       C: randomC,
       id: randomId,
@@ -71,6 +73,7 @@ export async function mockMeasure(
   const data: Array<MeasureDataItem> = [];
   for (let i = 0; i < count; i++) {
     const arr: Array<number> = [];
+    arr.push(Math.floor(Math.random() * 100) + 1);
     for (let j = 0; j < 3; j++) {
       const randomInt: number = Math.floor(Math.random() * 100) + 1;
       arr.push(randomInt);

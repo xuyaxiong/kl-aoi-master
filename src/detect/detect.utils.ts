@@ -43,7 +43,7 @@ export function deDupMeasureDataList(
 ): MeasureDataItem[] {
   const map = new Map();
   measureDataList.forEach((item) => {
-    const key = `${item[0]}-${item[1]}-${item[2]}`;
+    const key = `${item[1]}-${item[2]}-${item[3]}`;
     if (map.has(key)) {
       const existingItem = map.get(key);
       const finalItem = calcNewMeasureData(existingItem, item);
@@ -102,7 +102,10 @@ export function exportMeasureDataList(
   dir: string,
   data: MeasureDataItem[],
 ) {
-  const sheetData = [['R', 'C', 'ID', 'dx', 'dy', 'dr'], ...data];
+  const sheetData = [
+    ['R', 'C', 'ID', 'dx', 'dy', 'dr'],
+    ...data.map((item) => item.slice(1)),
+  ];
   const workbook = xlsx.utils.book_new();
   const worksheet = xlsx.utils.aoa_to_sheet(sheetData);
   xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
