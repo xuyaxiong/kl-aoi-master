@@ -6,11 +6,13 @@ import Utils from 'src/utils/Utils';
 import {
   AnomalyDataItem,
   AnomalyDefectCapInfo,
+  ImageInfo,
   MeasureDataItem,
   ReportPos,
 } from './detect.bo';
 import { cropImg, saveImage } from 'src/utils/image_utils';
 import { ImagePtr } from 'src/camera/camera.bo';
+import { anomaly1Dll } from 'src/wrapper/anomaly';
 
 export function objToFile(obj: object, dir: string, name: string) {
   Utils.ensurePathSync(dir);
@@ -66,7 +68,7 @@ export function deDupMeasureDataList(
 export function deDupAnomalyDataList(anomalyDataList: AnomalyDataItem[]) {
   const map = new Map();
   anomalyDataList.forEach((item) => {
-    const key = `${item.R}-${item.C}-${item.id}`;
+    const key = `${item.R}-${item.C}-${item.chipId}`;
     if (map.has(key)) {
       const existingItem = map.get(key);
       item.types.forEach((type) => existingItem.types.add(type));
@@ -92,7 +94,7 @@ export function exportAnomalyDataList(
 
   const sheetData = [
     ['R', 'C', 'ID', 'Types'],
-    ...formattedData.map((item) => [item.R, item.C, item.id, item.types]),
+    ...formattedData.map((item) => [item.R, item.C, item.chipId, item.types]),
   ];
   const workbook = xlsx.utils.book_new();
   const worksheet = xlsx.utils.aoa_to_sheet(sheetData);
@@ -125,16 +127,72 @@ export function exportMeasureDataList(
 
 // 截取外观缺陷小图
 export async function capAnomalyDefectImgs(
-  imagePtrMap: Map<number, ImagePtr>,
+  imageInfoMap: Map<number, ImageInfo>,
   anomalyDefectCapInfoList: AnomalyDefectCapInfo[],
   savePath: string,
 ) {
   for await (const capInfo of anomalyDefectCapInfoList) {
-    const imgPtr = imagePtrMap.get(capInfo.fno);
+    const imgInfo = imageInfoMap.get(capInfo.fno);
     const { R, C, chipId, type, left, top, width, height } = capInfo;
-    const imgBuf = cropImg(imgPtr, left, top, width, height);
+    const imgBuf = cropImg(imgInfo.imagePtr, left, top, width, height);
     const randomStr = Utils.genRandomStr(5);
     const imgName = `${R}_${C}_${chipId}_${type}_${randomStr}.jpg`;
     saveImage({ buffer: imgBuf, width, height, channel: 3 }, savePath, imgName);
   }
+}
+
+// 截取测量缺陷小图
+export async function capMeasureDefectImgs(
+  imageInfoMap: Map<number, ImageInfo>,
+  anomalyDefectCapInfoList: MeasureDataItem[],
+  lensParams: LensParams,
+  mappingParams: MappingParams,
+  rectifyParams: RectifyParams,
+  chipSize: number[],
+  savePath: string,
+) {
+  for (const item of anomalyDefectCapInfoList.slice(0, 10)) {
+    const [fno, R, C, chipId, dx, dy, dr] = item;
+    const { imagePtr, reportPos } = imageInfoMap.get(fno);
+    const [left, top, width, height] = getChipCoors(
+      C,
+      R,
+      chipId,
+      [reportPos.x, reportPos.y],
+      lensParams,
+      rectifyParams,
+      mappingParams,
+      chipSize,
+    );
+    const imgBuf = cropImg(imagePtr, left, top, width, height);
+    const randomStr = Utils.genRandomStr(5);
+    const imgName = `${R}_${C}_${chipId}_${randomStr}.jpg`;
+    saveImage({ buffer: imgBuf, width, height, channel: 3 }, savePath, imgName);
+  }
+}
+
+// 根据行列信息获取截图区域 [left, top, width, height]
+export function getChipCoors(
+  C: number,
+  R: number,
+  chipId: number,
+  pos: number[],
+  lensParams: number[],
+  rectifyParams: number[],
+  mappingParams: number[],
+  chipSize: number[],
+) {
+  const buf = Buffer.alloc(4 * 8);
+  anomaly1Dll.getChipCoors(
+    C,
+    R,
+    chipId,
+    pos.doubleToBuffer(),
+    lensParams.doubleToBuffer(),
+    rectifyParams.doubleToBuffer(),
+    mappingParams.doubleToBuffer(),
+    chipSize.doubleToBuffer(),
+    buf,
+  );
+  return buf.toDoubleArr();
 }

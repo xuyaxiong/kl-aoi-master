@@ -9,7 +9,6 @@ import { PlcService } from 'src/plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
 import {
-  mockReportPos,
   mockImgSeqGenerator,
   mockAnomaly,
   mockMeasure,
@@ -30,12 +29,14 @@ import {
   MeasureDataItem,
   MeasureRemoteCfg,
   RecipeBO,
+  ReportPos,
 } from './detect.bo';
 import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from 'src/db/recipe/recipe.service';
 import { CapPos } from 'src/plc/plc.bo';
 import {
   capAnomalyDefectImgs,
+  capMeasureDefectImgs,
   deDupAnomalyDataList,
   deDupMeasureDataList,
   exportAnomalyDataList,
@@ -145,9 +146,19 @@ export class DetectService {
 
         // 截取外观缺陷小图
         await capAnomalyDefectImgs(
-          this.detectInfoQueue.imagePtrMap,
+          this.detectInfoQueue.imageInfoMap,
           this.anomalyDefectCapInfoList,
           this.materialBO.anomalyDefectCapImgPath,
+        );
+        // 截取测量缺陷小图
+        await capMeasureDefectImgs(
+          this.detectInfoQueue.imageInfoMap,
+          this.measureRawList,
+          this.materialBO.recipeBO.lensParams,
+          this.materialBO.recipeBO.mappingParams,
+          this.materialBO.recipeBO.rectifyParams,
+          this.materialBO.recipeBO.chipSize,
+          this.materialBO.measureDefectCapImgPath,
         );
       },
     );
@@ -170,7 +181,7 @@ export class DetectService {
   // 外观缺陷小图信息
   private anomalyDefectCapInfoList: AnomalyDefectCapInfo[];
   @OnEvent('camera.grabbed')
-  async grabbed(imagePtr: ImagePtr) {
+  async grabbed(imagePtr: ImagePtr, reportPos?: ReportPos) {
     if (this.detectStatus === DetectStatus.CORRECTION_ONE) {
       // 1.3. 获取纠偏点位1图片
       const img1Ptr = imagePtr;
@@ -202,7 +213,7 @@ export class DetectService {
       this.currImgCnt += 1;
       this.logger.log(`当前收到图片数量: ${this.currImgCnt}`);
       this.detectInfoQueue.addImagePtr(imagePtr);
-      this.detectInfoQueue.addPos(mockReportPos()); // TODO 随机坐标
+      if (reportPos) this.detectInfoQueue.addPos(reportPos);
       // const imagePath = saveTmpImagePtr(imagePtr);
       // console.log(imagePath);
       while (!this.detectInfoQueue.isEmpty()) {

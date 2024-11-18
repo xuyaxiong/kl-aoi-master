@@ -32,7 +32,8 @@ export function mockImgSeqGenerator(
       channel,
       fno++,
     );
-    eventEmitter.emit(`camera.grabbed`, imgPtr);
+    const reportPos = { x: 96.40910339355469, y: 40.311100006103516 };
+    eventEmitter.emit(`camera.grabbed`, imgPtr, reportPos);
     if (fno >= imgNum) clearInterval(handle);
   }, delay);
 }
@@ -57,7 +58,7 @@ export async function mockAnomaly(
       fno: randomFno,
       R: randomR,
       C: randomC,
-      id: randomId,
+      chipId: randomId,
       types: types,
     };
     data.push(item);
