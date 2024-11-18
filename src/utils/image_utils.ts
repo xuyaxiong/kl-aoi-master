@@ -22,6 +22,8 @@ export function loadImage(
   };
 }
 
+// 缓存本地加载图片
+const localImgCache = new Map();
 export function loadImagePtr(
   path: string,
   width: number,
@@ -30,6 +32,7 @@ export function loadImagePtr(
   fno: number,
 ) {
   const img = loadImage(path, width, height, channel);
+  localImgCache.set(Symbol(), img.buffer);
   const klBuffer = KLBuffer.alloc(width * height * channel, img.buffer);
   const imagePtr: ImagePtr = new ImagePtr(
     [klBuffer.ptrVal, klBuffer.size],
@@ -61,7 +64,7 @@ export function saveImagePtr(
 
 export function saveTmpImagePtr(imagePtr: ImagePtr, dir: string = null) {
   const tmpDir = dir || path.join(os.tmpdir(), 'koalaTmp');
-  const imgName = `tmp-${dayjs().format('YYYYMMDDHHmmssSSS')}.png`;
+  const imgName = `tmp-${Utils.genRandomStr(10)}.jpg`;
   return saveImagePtr(imagePtr, tmpDir, imgName);
 }
 
@@ -97,4 +100,29 @@ function _saveImage(
     () => {},
   );
   return fullPath;
+}
+
+export function cropImg(
+  imgPtr: ImagePtr,
+  left: number,
+  top: number,
+  cropWidth: number,
+  cropHeight: number,
+) {
+  const { width, height, channel } = imgPtr;
+  const imgBuffer = new KLBuffer(imgPtr.bufferPtr[1], imgPtr.bufferPtr[0])
+    .buffer;
+  const defeatBuffer = Buffer.alloc(cropWidth * cropHeight * channel);
+  shmemDll.crop(
+    imgBuffer,
+    width,
+    height,
+    left,
+    top,
+    defeatBuffer,
+    cropWidth,
+    cropHeight,
+    channel,
+  );
+  return defeatBuffer;
 }

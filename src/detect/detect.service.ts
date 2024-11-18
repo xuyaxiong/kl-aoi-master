@@ -1,6 +1,5 @@
 import { Logger, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import * as KLBuffer from 'kl-buffer';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 const path = require('path');
@@ -9,7 +8,6 @@ import { ImagePtr } from 'src/camera/camera.bo';
 import { PlcService } from 'src/plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
-import { loadImage, saveTmpImagePtr } from 'src/utils/image_utils';
 import {
   mockReportPos,
   mockImgSeqGenerator,
@@ -20,7 +18,9 @@ import {
 } from './detect.mock';
 import {
   AnomalyDataItem,
+  AnomalyDefectCapInfo,
   AnomalyRemoteCfg,
+  AnomalyRes,
   DetectCfg,
   DetectedCounter,
   DetectInfoQueue,
@@ -35,6 +35,7 @@ import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from 'src/db/recipe/recipe.service';
 import { CapPos } from 'src/plc/plc.bo';
 import {
+  capAnomalyDefectImgs,
   deDupAnomalyDataList,
   deDupMeasureDataList,
   exportAnomalyDataList,
@@ -93,6 +94,7 @@ export class DetectService {
     );
     this.anomalyRawList = [];
     this.measureRawList = [];
+    this.anomalyDefectCapInfoList = [];
     const totalPointCnt = this.materialBO.recipeBO.totalDotNum;
     const detectCount = this.calcDetectCount(this.detectCfgSeq, totalPointCnt);
     this.totalImgCnt = detectCount.totalImgCnt;
@@ -113,7 +115,7 @@ export class DetectService {
       this.totalDetectCnt,
       this.totalAnomalyCnt,
       this.totalMeasureCnt,
-      () => {
+      async () => {
         // 原始测量结果去重
         const dedupMeasureDataList = deDupMeasureDataList(this.measureRawList);
         console.log('去重前测量结果:', this.measureRawList.length);
@@ -140,6 +142,13 @@ export class DetectService {
           this.materialBO.dataOutputPath,
           dedupAnomalyDataList,
         );
+
+        // 截取外观缺陷小图
+        await capAnomalyDefectImgs(
+          this.detectInfoQueue.imagePtrMap,
+          this.anomalyDefectCapInfoList,
+          this.materialBO.anomalyDefectCapImgPath,
+        );
       },
     );
     // this.eventEmitter.emit(`startCorrection`);
@@ -158,6 +167,8 @@ export class DetectService {
 
   private anomalyRawList: AnomalyDataItem[];
   private measureRawList: MeasureDataItem[];
+  // 外观缺陷小图信息
+  private anomalyDefectCapInfoList: AnomalyDefectCapInfo[];
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr) {
     if (this.detectStatus === DetectStatus.CORRECTION_ONE) {
@@ -208,13 +219,29 @@ export class DetectService {
           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
-            const { anomalyList: anomalyRes, flawList } =
-              await this.anomalyRemote(null); // TODO flawList 需插入数据库
-            this.anomalyRawList.push(...anomalyRes);
+            const { anomalyList, flawList } = await this.anomalyRemote(
+              fno,
+              null,
+            ); // TODO flawList 需插入数据库
+            const anomalyDefectCapInfoArr = flawList.map((item) => {
+              return {
+                fno: item.fno,
+                R: item.coor.R,
+                C: item.coor.C,
+                chipId: item.coor.chipId,
+                type: item.type,
+                left: item.position[0],
+                top: item.position[1],
+                width: item.position[2],
+                height: item.position[3],
+              };
+            });
+            this.anomalyDefectCapInfoList.push(...anomalyDefectCapInfoArr);
+            this.anomalyRawList.push(...anomalyList);
             this.detectedCounter.plusAnomalyCnt();
           } else if (detectType === DetectType.MEASURE) {
             // 送测量
-            const measureRes = await this.measureRemote(null);
+            const measureRes = await this.measureRemote(fno, null);
             this.measureRawList.push(...measureRes);
             this.detectedCounter.plusMeasureCnt();
           }
@@ -302,10 +329,10 @@ export class DetectService {
     };
   }
 
-  public async measureRemote(measureParam: MeasureParam) {
+  public async measureRemote(fno: number, measureParam: MeasureParam) {
     const measureUrl = `${this.measureRemoteCfg.host}:${this.measureRemoteCfg.port}/measure/measure`;
     try {
-      const param = mockMeasureParam();
+      const param = mockMeasureParam(fno);
       objToFile(
         param,
         path.join(this.materialBO.detectParamPath, 'measureParams'),
@@ -320,10 +347,13 @@ export class DetectService {
     }
   }
 
-  public async anomalyRemote(anomalyParam: AnomalyParam) {
+  public async anomalyRemote(
+    fno: number,
+    anomalyParam: AnomalyParam,
+  ): Promise<AnomalyRes> {
     const anomalyUrl = `${this.anomalyRemoteCfg.host}:${this.anomalyRemoteCfg.port}/anomaly/anomaly`;
     try {
-      const param = mockAnomalyParam();
+      const param = mockAnomalyParam(fno);
       objToFile(
         param,
         path.join(this.materialBO.detectParamPath, 'anomalyParams'),
@@ -337,7 +367,7 @@ export class DetectService {
       return {
         flawList: [],
         anomalyList: [],
-      };
+      } as AnomalyRes;
     }
   }
 }

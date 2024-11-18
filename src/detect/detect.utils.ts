@@ -3,7 +3,14 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 import Utils from 'src/utils/Utils';
-import { AnomalyDataItem, MeasureDataItem, ReportPos } from './detect.bo';
+import {
+  AnomalyDataItem,
+  AnomalyDefectCapInfo,
+  MeasureDataItem,
+  ReportPos,
+} from './detect.bo';
+import { cropImg, saveImage } from 'src/utils/image_utils';
+import { ImagePtr } from 'src/camera/camera.bo';
 
 export function objToFile(obj: object, dir: string, name: string) {
   Utils.ensurePathSync(dir);
@@ -114,4 +121,20 @@ export function exportMeasureDataList(
   const fullPath = path.join(dir, name);
   console.log('导出测量数据:', fullPath);
   fs.writeFileSync(fullPath, csvContent);
+}
+
+// 截取外观缺陷小图
+export async function capAnomalyDefectImgs(
+  imagePtrMap: Map<number, ImagePtr>,
+  anomalyDefectCapInfoList: AnomalyDefectCapInfo[],
+  savePath: string,
+) {
+  for await (const capInfo of anomalyDefectCapInfoList) {
+    const imgPtr = imagePtrMap.get(capInfo.fno);
+    const { R, C, chipId, type, left, top, width, height } = capInfo;
+    const imgBuf = cropImg(imgPtr, left, top, width, height);
+    const randomStr = Utils.genRandomStr(5);
+    const imgName = `${R}_${C}_${chipId}_${type}_${randomStr}.jpg`;
+    saveImage({ buffer: imgBuf, width, height, channel: 3 }, savePath, imgName);
+  }
 }

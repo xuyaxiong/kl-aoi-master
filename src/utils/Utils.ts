@@ -34,4 +34,10 @@ export default class Utils {
     }
     return randomStr;
   }
+
+  public static sleep(ms: number) {
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, ms);
+    });
+  }
 }

@@ -40,7 +40,7 @@ export class DetectInfoQueue {
   private imgCnt = 0;
   private posQueue: ReportPos[] = [];
   private imagePtrQueue: ImagePtr[] = [];
-  private imagePtrMap = new Map<number, ImagePtr>();
+  public readonly imagePtrMap = new Map<number, ImagePtr>();
 
   constructor(
     private detectCfgLoop: DetectCfg[],
@@ -206,6 +206,7 @@ export class MaterialBO {
   public readonly outputPath: string;
   public readonly dataOutputPath: string;
   public readonly detectParamPath: string;
+  public readonly anomalyDefectCapImgPath: string;
 
   constructor(
     private readonly sn: string,
@@ -225,6 +226,11 @@ export class MaterialBO {
       this.sn,
       this.id,
     );
+    this.anomalyDefectCapImgPath = path.join(
+      this.dataOutputPath,
+      'DEFECT_IMGS',
+      'ANOMALY',
+    );
     this.detectParamPath = path.join(this.outputPath, 'detectParams');
   }
 }
@@ -243,4 +249,36 @@ export interface ShieldInfo {
   path: string;
   col: number;
   row: number;
+}
+
+export interface DefectCoor {
+  fno: number;
+  R: number;
+  C: number;
+  chipId: number;
+}
+
+export interface AnomalyFlawItem {
+  fno: number;
+  type: number;
+  feature: string;
+  position: number[];
+  coor: DefectCoor;
+}
+
+export interface AnomalyRes {
+  flawList: AnomalyFlawItem[];
+  anomalyList: AnomalyDataItem[];
+}
+
+export interface AnomalyDefectCapInfo {
+  fno: number;
+  R: number;
+  C: number;
+  chipId: number;
+  type: number;
+  top: number;
+  left: number;
+  width: number;
+  height: number;
 }

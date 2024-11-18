@@ -22,7 +22,10 @@ export class DetectController {
   @Post('measure')
   async measure(@Body() measureParam: MeasureParam) {
     try {
-      const res = await this.detectService.measureRemote(measureParam);
+      const res = await this.detectService.measureRemote(
+        measureParam.fno,
+        measureParam,
+      );
       return HttpResponse.ok(res);
     } catch (error) {
       return HttpResponse.err(error.msg);

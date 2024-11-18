@@ -92,102 +92,90 @@ function randomDelay(min: number, max: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
-function mockMeasureParamWrapper() {
-  let fno = -1;
-  return function () {
-    fno++;
-    return {
-      fno,
-      imagePath:
-        'C:\\Users\\xuyax\\Desktop\\test_measure_data\\2_96.40910339355469_40.311100006103516_0.jpg',
-      imageSize: {
-        width: 5120,
-        height: 5120,
-        channel: 3,
-      },
-      pos: [96.40910339355469, 40.311100006103516],
-      lensParams: [
-        2560, 2560, -0.0005041561895677955, -2.624267773850234e-7,
-        9.475674094265883e-7, -6.506838968108795e-7, 0.0005042270233878636,
-        -2.6541447767978505e-7, -2.1965531138071474e-7, 1.8761998416316002e-7,
-        1, 0, 0,
-      ],
-      mappingParams: [
-        -23.814633352512605, 0, 2324.8582496584995, 0, 23.804746876961232,
-        -930.7080318438426, 0, 0, 1,
-      ],
-      rectifyParams: [
-        1.000001001877541, 0, -0.0004724222292509239, 0, 1.0000010019284673,
-        0.0006768340244889259, 0, 0, 1,
-      ],
-      modelPath: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\chip2.ncc;',
-      chipNum: 1,
-      chipSize: [
-        0.16670243346758823, 0.14292144593974596, 0.7620682672804033,
-        0.8570638522485828,
-      ],
-      roiCornerPoint: [
-        97.62309649051184, 39.097581530875374, 67.59953956054554,
-        69.13360770067247, -0.0031858581209718295, 0.006539127039388859,
-      ],
-      detectRegionPath:
-        'C:\\Users\\xuyax\\Desktop\\test_measure_data\\shield.jpg',
-      measureThreshold: 0.7,
-      postProcess: false,
-    } as MeasureParam;
-  };
+export function mockMeasureParam(fno: number) {
+  return {
+    fno,
+    imagePath:
+      'C:\\Users\\xuyax\\Desktop\\test_measure_data\\2_96.40910339355469_40.311100006103516_0.jpg',
+    imageSize: {
+      width: 5120,
+      height: 5120,
+      channel: 3,
+    },
+    pos: [96.40910339355469, 40.311100006103516],
+    lensParams: [
+      2560, 2560, -0.0005041561895677955, -2.624267773850234e-7,
+      9.475674094265883e-7, -6.506838968108795e-7, 0.0005042270233878636,
+      -2.6541447767978505e-7, -2.1965531138071474e-7, 1.8761998416316002e-7, 1,
+      0, 0,
+    ],
+    mappingParams: [
+      -23.814633352512605, 0, 2324.8582496584995, 0, 23.804746876961232,
+      -930.7080318438426, 0, 0, 1,
+    ],
+    rectifyParams: [
+      1.000001001877541, 0, -0.0004724222292509239, 0, 1.0000010019284673,
+      0.0006768340244889259, 0, 0, 1,
+    ],
+    modelPath: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\chip2.ncc;',
+    chipNum: 1,
+    chipSize: [
+      0.16670243346758823, 0.14292144593974596, 0.7620682672804033,
+      0.8570638522485828,
+    ],
+    roiCornerPoint: [
+      97.62309649051184, 39.097581530875374, 67.59953956054554,
+      69.13360770067247, -0.0031858581209718295, 0.006539127039388859,
+    ],
+    detectRegionPath:
+      'C:\\Users\\xuyax\\Desktop\\test_measure_data\\shield.jpg',
+    measureThreshold: 0.7,
+    postProcess: false,
+  } as MeasureParam;
 }
 
-export const mockMeasureParam = mockMeasureParamWrapper();
-
-function mockAnomalyParamWrapper() {
-  let fno = -1;
-  return function () {
-    fno++;
-    const imageName = Utils.genRandomStr();
-    return {
-      fno,
-      imageName,
-      dbName: '20241016_test1.huanguang.db',
-      imagePath:
-        'C:\\Users\\xuyax\\Desktop\\test_measure_data\\2_96.40910339355469_40.311100006103516_0.jpg',
-      flawCount: 20,
-      anomalyThreshold: 0.8,
-      ignores: [0],
-      isFirst: true,
-      pos: [96.40910339355469, 40.311100006103516],
-      lensParams: [
-        2560, 2560, -0.0005041561895677955, -2.624267773850234e-7,
-        9.475674094265883e-7, -6.506838968108795e-7, 0.0005042270233878636,
-        -2.6541447767978505e-7, -2.1965531138071474e-7, 1.8761998416316002e-7,
-        1, 0, 0,
-      ],
-      mappingParams: [
-        -23.814633352512605, 0, 2324.8582496584995, 0, 23.804746876961232,
-        -930.7080318438426, 0, 0, 1,
-      ],
-      rectifyParams: [
-        1.000001001877541, 0, -0.0004724222292509239, 0, 1.0000010019284673,
-        0.0006768340244889259, 0, 0, 1,
-      ],
-      roiCornerPoint: [
-        97.62309649051184, 39.097581530875374, 67.59953956054554,
-        69.13360770067247, -0.0031858581209718295, 0.006539127039388859,
-      ],
-      chipNum: 1,
-      chipSize: [
-        0.16670243346758823, 0.14292144593974596, 0.7620682672804033,
-        0.8570638522485828,
-      ],
-      shildInfo: {
-        path: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\37.20241016_test1\\37.20241016_test1\\map.png',
-        col: 715,
-        row: 715,
-      },
-      imageSavePath: `D:\\tmp\\${imageName}.jpg`,
-      maskSavePath: `D:\\tmp\\mask_${imageName}.jpg`,
-    } as AnomalyParam;
-  };
+export function mockAnomalyParam(fno: number) {
+  const imageName = Utils.genRandomStr();
+  return {
+    fno,
+    imageName,
+    dbName: '20241016_test1.huanguang.db',
+    imagePath:
+      'C:\\Users\\xuyax\\Desktop\\test_measure_data\\2_96.40910339355469_40.311100006103516_0.jpg',
+    flawCount: 20,
+    anomalyThreshold: 0.8,
+    ignores: [0],
+    isFirst: true,
+    pos: [96.40910339355469, 40.311100006103516],
+    lensParams: [
+      2560, 2560, -0.0005041561895677955, -2.624267773850234e-7,
+      9.475674094265883e-7, -6.506838968108795e-7, 0.0005042270233878636,
+      -2.6541447767978505e-7, -2.1965531138071474e-7, 1.8761998416316002e-7, 1,
+      0, 0,
+    ],
+    mappingParams: [
+      -23.814633352512605, 0, 2324.8582496584995, 0, 23.804746876961232,
+      -930.7080318438426, 0, 0, 1,
+    ],
+    rectifyParams: [
+      1.000001001877541, 0, -0.0004724222292509239, 0, 1.0000010019284673,
+      0.0006768340244889259, 0, 0, 1,
+    ],
+    roiCornerPoint: [
+      97.62309649051184, 39.097581530875374, 67.59953956054554,
+      69.13360770067247, -0.0031858581209718295, 0.006539127039388859,
+    ],
+    chipNum: 1,
+    chipSize: [
+      0.16670243346758823, 0.14292144593974596, 0.7620682672804033,
+      0.8570638522485828,
+    ],
+    shildInfo: {
+      path: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\37.20241016_test1\\37.20241016_test1\\map.png',
+      col: 715,
+      row: 715,
+    },
+    imageSavePath: `D:\\tmp\\${imageName}.jpg`,
+    maskSavePath: `D:\\tmp\\mask_${imageName}.jpg`,
+  } as AnomalyParam;
 }
-
-export const mockAnomalyParam = mockAnomalyParamWrapper();
