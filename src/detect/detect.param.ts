@@ -1,5 +1,5 @@
 import { ImageSize } from 'src/camera/camera.bo';
-import { ShieldInfo } from './detect.bo';
+import { ShieldInfo } from './bo';
 
 export interface StartParam {
   sn: string;

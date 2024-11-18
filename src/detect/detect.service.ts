@@ -30,7 +30,7 @@ import {
   MeasureRemoteCfg,
   RecipeBO,
   ReportPos,
-} from './detect.bo';
+} from './bo';
 import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from 'src/db/recipe/recipe.service';
 import { CapPos } from 'src/plc/plc.bo';

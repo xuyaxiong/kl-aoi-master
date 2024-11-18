@@ -9,9 +9,8 @@ import {
   ImageInfo,
   MeasureDataItem,
   ReportPos,
-} from './detect.bo';
+} from './bo';
 import { cropImg, saveImage } from 'src/utils/image_utils';
-import { ImagePtr } from 'src/camera/camera.bo';
 import { anomaly1Dll } from 'src/wrapper/anomaly';
 
 export function objToFile(obj: object, dir: string, name: string) {
@@ -151,6 +150,7 @@ export async function capMeasureDefectImgs(
   chipSize: number[],
   savePath: string,
 ) {
+  // TODO 需要根据测量结果(dx, dy, dr)过滤
   for (const item of anomalyDefectCapInfoList.slice(0, 10)) {
     const [fno, R, C, chipId, dx, dy, dr] = item;
     const { imagePtr, reportPos } = imageInfoMap.get(fno);

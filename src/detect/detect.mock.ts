@@ -1,5 +1,5 @@
 import { loadImagePtr } from 'src/utils/image_utils';
-import { AnomalyDataItem, MeasureDataItem } from './detect.bo';
+import { AnomalyDataItem, MeasureDataItem } from './bo';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AnomalyParam, MeasureParam } from './detect.param';
 import Utils from 'src/utils/Utils';

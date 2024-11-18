@@ -1,4 +1,4 @@
-import { LightType, DetectType } from 'src/detect/detect.bo';
+import { LightType, DetectType } from 'src/detect/bo';
 
 export default () => ({
   detectCamType: 'Hik',
