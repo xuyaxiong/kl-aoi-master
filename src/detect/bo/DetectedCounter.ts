@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-import Utils from 'src/utils/Utils';
+import Utils from '../../utils/Utils';
 
 export class DetectedCounter {
   private total: number = 0;
@@ -46,11 +46,11 @@ export class DetectedCounter {
 
   public toString(): string {
     return `${chalk.cyan.bold('******************************')}
-  ${chalk.cyan.bold('点位总数')}: ${chalk.green.bold(this.totalPointCnt)}
-  ${chalk.cyan.bold('图片总数')}: ${chalk.green.bold(this.totalImgCnt)}
-  ${chalk.cyan.bold('检测总数')}: ${chalk.magenta.bold(this.total)}/${chalk.green.bold(this.totalDetectCnt)}
-  ${chalk.cyan.bold('外观总数')}: ${chalk.magenta.bold(this.anomaly)}/${chalk.green.bold(this.totalAnomalyCnt)}
-  ${chalk.cyan.bold('测量总数')}: ${chalk.magenta.bold(this.measure)}/${chalk.green.bold(this.totalMeasureCnt)}
-  ${chalk.cyan.bold('******************************')}`;
+${chalk.cyan.bold('点位总数')}: ${chalk.green.bold(this.totalPointCnt)}
+${chalk.cyan.bold('图片总数')}: ${chalk.green.bold(this.totalImgCnt)}
+${chalk.cyan.bold('检测总数')}: ${chalk.magenta.bold(this.total)}/${chalk.green.bold(this.totalDetectCnt)}
+${chalk.cyan.bold('外观总数')}: ${chalk.magenta.bold(this.anomaly)}/${chalk.green.bold(this.totalAnomalyCnt)}
+${chalk.cyan.bold('测量总数')}: ${chalk.magenta.bold(this.measure)}/${chalk.green.bold(this.totalMeasureCnt)}
+${chalk.cyan.bold('******************************')}`;
   }
 }

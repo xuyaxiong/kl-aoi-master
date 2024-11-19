@@ -1,8 +1,14 @@
 const assert = require('assert');
 const path = require('path');
-import { ImagePtr } from 'src/camera/camera.bo';
-import { DetectCfg, DetectInfo, ImageInfo, LightType, ReportPos } from './types';
-import { saveImagePtr } from 'src/utils/image_utils';
+import { ImagePtr } from '../../camera/camera.bo';
+import {
+  DetectCfg,
+  DetectInfo,
+  ImageInfo,
+  LightType,
+  ReportPos,
+} from './types';
+import { saveImagePtr } from '../../utils/image_utils';
 
 export class DetectInfoQueue {
   private imgCnt = 0;

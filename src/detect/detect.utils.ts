@@ -2,7 +2,7 @@ const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
-import Utils from 'src/utils/Utils';
+import Utils from '../utils/Utils';
 import {
   AnomalyDataItem,
   AnomalyDefectCapInfo,
@@ -10,8 +10,8 @@ import {
   MeasureDataItem,
   ReportPos,
 } from './bo';
-import { cropImg, saveImage } from 'src/utils/image_utils';
-import { anomaly1Dll } from 'src/wrapper/anomaly';
+import { cropImg, saveImage } from '../utils/image_utils';
+import { anomaly1Dll } from '../wrapper/anomaly';
 
 export function objToFile(obj: object, dir: string, name: string) {
   Utils.ensurePathSync(dir);
@@ -155,8 +155,8 @@ export async function capMeasureDefectImgs(
     const [fno, R, C, chipId, dx, dy, dr] = item;
     const { imagePtr, reportPos } = imageInfoMap.get(fno);
     const [left, top, width, height] = getChipCoors(
-      C,
       R,
+      C,
       chipId,
       [reportPos.x, reportPos.y],
       lensParams,
@@ -173,8 +173,8 @@ export async function capMeasureDefectImgs(
 
 // 根据行列信息获取截图区域 [left, top, width, height]
 export function getChipCoors(
-  C: number,
   R: number,
+  C: number,
   chipId: number,
   pos: number[],
   lensParams: number[],

@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 const path = require('path');
 import '../extension';
-import { ImagePtr } from 'src/camera/camera.bo';
-import { PlcService } from 'src/plc/plc.service';
+import { ImagePtr } from '../camera/camera.bo';
+import { PlcService } from '../plc/plc.service';
 import { ReportData } from 'kl-ins';
 import { CameraService } from './../camera/camera.service';
 import {
@@ -32,8 +32,8 @@ import {
   ReportPos,
 } from './bo';
 import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
-import { RecipeService } from 'src/db/recipe/recipe.service';
-import { CapPos } from 'src/plc/plc.bo';
+import { RecipeService } from '../db/recipe/recipe.service';
+import { CapPos } from '../plc/plc.bo';
 import {
   capAnomalyDefectImgs,
   capMeasureDefectImgs,
@@ -79,7 +79,7 @@ export class DetectService {
       this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
     this.anomalyRemoteCfg =
       this.configService.get<AnomalyRemoteCfg>('anomalyRemoteCfg');
-    this.detectCfgSeq = this.configService.get<DetectCfg[]>('detectCfgSeq');
+    this.detectCfgSeq = this.configService.get<DetectCfg[]>('detectCfgSeq'); // TODO 从配方中获取
     console.log('detectCfgSeq =', this.detectCfgSeq);
     this.setReportDataHandler();
   }
@@ -171,7 +171,11 @@ export class DetectService {
     // 1. 切换到纠偏1状态
     this.detectStatus = DetectStatus.CORRECTION_ONE;
     // 1.1. 运动至纠偏点位1
-    await this.moveToXY(this.materialBO.recipeBO.correctionPos1);
+    const locationL = this.materialBO.recipeBO.locationL;
+    await this.moveToXY({
+      x: locationL.motorCoor[0],
+      y: locationL.motorCoor[1],
+    });
     // 1.2. 触发拍照
     await this.plcService.takePhoto();
   }
@@ -188,7 +192,11 @@ export class DetectService {
       // 1.4. 获取纠偏点位1坐标
       const pos1 = await this.getCurrPos();
       // 1.5. 运动至纠偏点位2
-      await this.moveToXY(this.materialBO.recipeBO.correctionPos2);
+      const locationR = this.materialBO.recipeBO.locationR;
+      await this.moveToXY({
+        x: locationR.motorCoor[0],
+        y: locationR.motorCoor[1],
+      });
       // 2. 切换到纠偏2状态
       this.detectStatus = DetectStatus.CORRECTION_TWO;
       // 2.1. 触发拍照

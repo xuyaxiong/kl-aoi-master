@@ -25,13 +25,14 @@ export class MaterialBO {
       nowDate,
       this.id,
     );
-    this.dataOutputPath = path.join(
-      MaterialBO.BASE_CUSTOMER_OUTPUT_PATH,
-      nowDate,
-      this.recipeBO.name,
-      this.sn,
-      this.id,
-    );
+    // this.dataOutputPath = path.join(
+    //   MaterialBO.BASE_CUSTOMER_OUTPUT_PATH,
+    //   nowDate,
+    //   this.recipeBO.name,
+    //   this.sn,
+    //   this.id,
+    // );
+    this.dataOutputPath = this.outputPath;
     this.anomalyDefectCapImgPath = path.join(
       this.dataOutputPath,
       'DEFECT_IMGS',

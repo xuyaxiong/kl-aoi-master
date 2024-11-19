@@ -3,8 +3,8 @@ import * as os from 'os';
 import * as KLBuffer from 'kl-buffer';
 import * as dayjs from 'dayjs';
 import Utils from './Utils';
-import { Image, ImagePtr } from 'src/camera/camera.bo';
-import shmemDll from 'src/wrapper/shmem';
+import { Image, ImagePtr } from '../camera/camera.bo';
+import shmemDll from '../wrapper/shmem';
 
 export function loadImage(
   path: string,

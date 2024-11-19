@@ -1,21 +1,36 @@
-import { CapPos } from 'src/plc/plc.bo';
+import { CapPos } from '../../plc/plc.bo';
+import { DetectCfg, DetectType, LightType, Location } from './types';
 
 export class RecipeBO {
-  public readonly correctionPos1: CapPos;
-  public readonly correctionPos2: CapPos;
+  // 检测配置序列
+  public readonly detectCfgSeq: DetectCfg[];
+  // 纠偏定位点
+  public readonly locationL: Location;
+  public readonly locationR: Location;
+  // 拍照点位坐标
   public readonly dotList: CapPos[];
+  // 点位总数量
   public readonly totalDotNum: number;
+  // 检测参数
   public readonly rectifyParams: RectifyParams;
   public readonly lensParams: LensParams;
   public readonly mappingParams: MappingParams;
+  // die行列数
+  public readonly maxRow: number;
+  public readonly maxCol: number;
+  // die中chip大小及位置
   public readonly chipSize: number[];
+  // 测量值宽容范围
+  public readonly chipMeasureX: number[];
+  public readonly chipMeasureY: number[];
+  public readonly chipMeasureR: number[];
 
   constructor(
     public readonly id: number,
     public readonly name: string,
     private readonly config: string,
   ) {
-    const params = this.parse();
+    const params = this.parseMock();
     for (const item in params) {
       this[item] = params[item];
     }
@@ -23,9 +38,36 @@ export class RecipeBO {
 
   private parse() {
     const config = JSON.parse(this.config);
+
+    const rectifyParams = config.rectifyParams;
+    const mappingParams = config.mapParams;
+    const locationL = config.locationL;
+    const locationR = config.locationR;
+    const maxRow = config.maxRow;
+    const maxCol = config.maxCol;
+    const chipMeasureX = config.chipMeasureX;
+    const chipMeasureY = config.chipMeasureY;
+    const chipMeasureR = config.chipMeasureR;
+    const detectCfgSeq = this.patternCfgToDetectCfg(config.patterns);
+
+    return {
+      detectCfgSeq,
+      rectifyParams,
+      mappingParams,
+      locationL,
+      locationR,
+      maxRow,
+      maxCol,
+      chipMeasureX,
+      chipMeasureY,
+      chipMeasureR,
+    };
+  }
+
+  private parseMock() {
     // TODO 从真实配置中解析数据
-    const correctionPos1 = { x: 50, y: 50 };
-    const correctionPos2 = { x: 100, y: 100 };
+    const locationL = { motorCoor: [50, 50] };
+    const locationR = { motorCoor: [100, 100] };
     const totalDotNum = 10;
     const lensParams = [
       2560, 2560, -0.0005041561895677955, -2.624267773850234e-7,
@@ -47,13 +89,38 @@ export class RecipeBO {
     ];
 
     return {
-      correctionPos1,
-      correctionPos2,
+      locationL,
+      locationR,
       totalDotNum,
       rectifyParams,
       lensParams,
       mappingParams,
       chipSize,
     };
+  }
+
+  private patternCfgToDetectCfg(patternCfgList: []): DetectCfg[] {
+    const detectCfgSeq = [];
+    for (const patternCfg of patternCfgList) {
+      const detectCfg = { detectTypeList: [] };
+      detectCfg['name'] = patternCfg['name'];
+      detectCfg['lightType'] =
+        patternCfg['lightType'] === 'COAXIAL'
+          ? LightType.COAXIAL
+          : patternCfg['lightType'] === 'RING'
+            ? LightType.RING
+            : patternCfg['lightType'] === 'COAXIAL_RING'
+              ? LightType.COAXIAL_RING
+              : null;
+      if (patternCfg['enableAnomaly'])
+        detectCfg['detectTypeList'].push(DetectType.ANOMALY);
+      if (patternCfg['enableMeasure'])
+        detectCfg['detectTypeList'].push(DetectType.MEASURE);
+      detectCfgSeq.push(detectCfg);
+      detectCfg['modelFile'] = patternCfg['modelFile'] ?? null;
+      detectCfg['anomaly'] = patternCfg['anomaly'] ?? null;
+      detectCfg['ignores'] = patternCfg['ignores'] ?? null;
+    }
+    return detectCfgSeq;
   }
 }

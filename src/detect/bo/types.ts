@@ -1,4 +1,4 @@
-import { ImagePtr } from 'src/camera/camera.bo';
+import { ImagePtr } from '../../camera/camera.bo';
 
 export enum DetectType {
   ANOMALY, // 外观
@@ -8,6 +8,7 @@ export enum DetectType {
 export enum LightType {
   COAXIAL,
   RING,
+  COAXIAL_RING,
 }
 
 export interface ReportPos {
@@ -30,8 +31,12 @@ export interface DetectInfo {
 }
 
 export interface DetectCfg {
+  name: string;
   lightType: LightType;
   detectTypeList: DetectType[];
+  modelFile?: string;
+  anomaly?: number;
+  ignores?: number[];
 }
 
 export interface MeasureRemoteCfg {
@@ -90,4 +95,13 @@ export interface AnomalyDefectCapInfo {
   left: number;
   width: number;
   height: number;
+}
+
+// 纠偏定位点信息
+export interface Location {
+  motorCoor: number[];
+  tplPath: string;
+  tplWidth: number;
+  tplHeight: number;
+  modelFile: string;
 }
