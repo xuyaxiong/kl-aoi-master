@@ -3,6 +3,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 const path = require('path');
+const _ = require('lodash');
 import '../extension';
 import { ImagePtr } from '../camera/camera.bo';
 import { PlcService } from '../plc/plc.service';
@@ -18,6 +19,7 @@ import {
 import {
   AnomalyDataItem,
   AnomalyDefectCapInfo,
+  AnomalyFlawItem,
   AnomalyRemoteCfg,
   AnomalyRes,
   DetectCfg,
@@ -33,6 +35,7 @@ import {
 } from './bo';
 import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from '../db/recipe/recipe.service';
+import { FlawService } from '../db/flaw/flaw.service';
 import { CapPos } from '../plc/plc.bo';
 import {
   capAnomalyDefectImgs,
@@ -74,6 +77,7 @@ export class DetectService {
     private readonly plcService: PlcService,
     private readonly cameraService: CameraService,
     private readonly recipeService: RecipeService,
+    private readonly flawService: FlawService,
   ) {
     this.measureRemoteCfg =
       this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
@@ -241,7 +245,9 @@ export class DetectService {
             const { anomalyList, flawList } = await this.anomalyRemote(
               fno,
               null,
-            ); // TODO flawList 需插入数据库
+            );
+            // flawList 插入数据库
+            this.insertFlaws(flawList);
             const anomalyDefectCapInfoArr = flawList.map((item) => {
               return {
                 fno: item.fno,
@@ -387,6 +393,22 @@ export class DetectService {
         flawList: [],
         anomalyList: [],
       } as AnomalyRes;
+    }
+  }
+
+  private async insertFlaws(flawList: AnomalyFlawItem[]) {
+    const flawParts = _.chunk(flawList, 2000);
+    for await (const part of flawParts) {
+      const flawEntityList = part.map((flaw: AnomalyFlawItem) => {
+        return {
+          feature: flaw.feature,
+          type: flaw.type,
+          position: flaw.position.toString(),
+          materialId: this.materialBO.id,
+          patternId: 0, // ? 好像要区分不同pattern
+        };
+      });
+      await this.flawService.saveInBatch(flawEntityList);
     }
   }
 }

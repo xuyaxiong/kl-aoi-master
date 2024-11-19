@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InsertResult, Repository } from 'typeorm';
 import { Flaw } from './flaw.entity';
 
 @Injectable()
@@ -21,6 +21,10 @@ export class FlawService {
   async create(flaw: Partial<Flaw>): Promise<Flaw> {
     const newFlaw = this.flawRepository.create(flaw);
     return this.flawRepository.save(newFlaw);
+  }
+
+  async saveInBatch(flaws: Partial<Flaw>[]): Promise<InsertResult> {
+    return this.flawRepository.insert(flaws);
   }
 
   async update(id: number, updateFlaw: Partial<Flaw>): Promise<Flaw> {

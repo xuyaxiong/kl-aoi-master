@@ -47,7 +47,6 @@ export class DetectInfoQueue {
       assert(imagePtr !== undefined, '图片不能为空');
       // 缓存图片指针，数据合并完成后截取缺陷小图用
       this.imageInfoMap.set(imagePtr.frameId, { imagePtr, reportPos: pos });
-      // TODO 此处保存图片
       let lightName = '';
       if (lightType === LightType.COAXIAL) {
         lightName = '同轴';

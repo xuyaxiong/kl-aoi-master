@@ -5,10 +5,13 @@ export class Flaw {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
   materialId: string;
 
+  @Column()
   patternId: number;
 
+  @Column({ type: 'text' })
   feature: string;
 
   @Column()
@@ -17,21 +20,9 @@ export class Flaw {
   @Column()
   type: number;
 
-  @Column()
-  affirmType: number;
+  @Column({ nullable: true })
+  affirmType?: number;
 
-  @Column()
-  userid: string;
-
-  @Column()
-  mappingX: number;
-
-  @Column()
-  mappingY: number;
-
-  @Column()
-  bin: number;
-
-  @Column()
-  imgIndex: number;
+  @Column({ nullable: true })
+  userid?: string;
 }
