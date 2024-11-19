@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptor/logging.interceptor';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { WsAdapter } from '@nestjs/platform-ws';
+import { WsAdapter } from './ws/ws.adapter';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
