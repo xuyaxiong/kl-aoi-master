@@ -126,3 +126,30 @@ export function cropImg(
   );
   return defeatBuffer;
 }
+
+export function loadImageAsync(
+  path: string,
+  width: number,
+  height: number,
+  channel: number,
+): Promise<Image> {
+  const buffer = Buffer.alloc(width * height * channel);
+  return new Promise((resolve, reject) => {
+    shmemDll.imread.async(
+      path,
+      buffer,
+      width,
+      height,
+      channel,
+      true,
+      (err, retVal) => {
+        resolve({
+          buffer,
+          width,
+          height,
+          channel,
+        });
+      },
+    );
+  });
+}
