@@ -31,4 +31,22 @@ export class Material {
 
   @Column({ nullable: true })
   imgInfo: string;
+
+  @Column({ nullable: true })
+  detectResult: string;
+
+  @Column({ default: 0 })
+  detectNG: number;
+
+  @Column({ nullable: true })
+  affirmUserId: number;
+
+  @Column({ nullable: true })
+  affirmTime: Date;
+
+  @Column({ nullable: true })
+  affirmResult: string;
+
+  @Column({ default: 0 })
+  affirmNG: number;
 }

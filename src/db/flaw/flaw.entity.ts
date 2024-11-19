@@ -22,7 +22,4 @@ export class Flaw {
 
   @Column({ nullable: true })
   affirmType?: number;
-
-  @Column({ nullable: true })
-  userid?: string;
 }

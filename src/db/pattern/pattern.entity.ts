@@ -13,4 +13,7 @@ export class Pattern {
 
   @Column()
   modelFile: string;
+
+  @Column()
+  lightType: string;
 }
