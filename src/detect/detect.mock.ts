@@ -128,8 +128,7 @@ export function mockMeasureParam(fno: number) {
       97.62309649051184, 39.097581530875374, 67.59953956054554,
       69.13360770067247, -0.0031858581209718295, 0.006539127039388859,
     ],
-    detectRegionPath:
-      'C:\\Users\\xuyax\\Desktop\\test_measure_data\\shield.jpg',
+    detectRegionSize: [715, 715],
     measureThreshold: 0.7,
     postProcess: false,
   } as MeasureParam;

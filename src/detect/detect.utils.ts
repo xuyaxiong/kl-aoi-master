@@ -187,7 +187,7 @@ export function getChipCoors(
   chipSize: number[],
 ) {
   const buf = Buffer.alloc(4 * 8);
-  anomaly1Dll.getChipCoors(
+  rectifyDll.getChipCoors(
     C,
     R,
     chipId,
@@ -198,7 +198,9 @@ export function getChipCoors(
     chipSize.doubleToBuffer(),
     buf,
   );
-  return buf.toDoubleArr();
+  // 返回值为左上、右下两个点坐标
+  const [p1_x, p1_y, p2_x, p2_y] = buf.toDoubleArr();
+  return [p1_x, p1_y, p2_x - p1_x, p2_y - p1_y];
 }
 
 // 1_204.3885040283203_215.08619689941406.png

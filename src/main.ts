@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as fs from 'fs';
 import { spawn } from 'child_process';
-import { join } from 'path';
+const path = require('path');
 import { LoggingInterceptor } from './interceptor/logging.interceptor';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WsAdapter } from './ws/ws.adapter';
@@ -53,8 +53,8 @@ function swaggerDoc(app) {
 function dllDump(port: number) {
   const crashDir = AppConfig.CRASH_DUMP_DIR;
   fs.mkdirSync(crashDir, { recursive: true });
-  const crashPath = `${crashDir}${Date.now()}.dmp`;
-  let procdumpPath = join(__dirname, 'procdump.exe');
+  const crashPath = path.join(crashDir, `${Date.now()}.dmp`);
+  let procdumpPath = path.join(__dirname, 'procdump.exe');
   const procdump = spawn(procdumpPath, [
     '-accepteula',
     '-e',
@@ -82,6 +82,7 @@ function configLogger() {
     maxSize: '20m',
     maxFiles: '14d',
     format: winston.format.combine(
+      winston.format.uncolorize(),
       winston.format.timestamp({
         format: 'YYYY-MM-DD HH:mm:ss',
       }),

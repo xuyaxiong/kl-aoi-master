@@ -18,7 +18,7 @@ export interface MeasureParam {
   chipNum: number;
   chipSize: number[];
   roiCornerPoint: number[];
-  detectRegionPath: string;
+  detectRegionSize: number[];
   measureThreshold: number;
   postProcess: Boolean;
 }

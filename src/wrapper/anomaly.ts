@@ -1,4 +1,5 @@
 const FFI = require('ffi-napi');
+const path = require('path');
 import AppConfig from '../app.config';
 const DLL_PATH = AppConfig.DLL_PATH;
 
@@ -9,7 +10,7 @@ const anomaly = (anomalyName) => {
   pathArray.unshift(DLL_PATH);
   process.env.PATH = pathArray.join(';');
 
-  const Library = new FFI.Library(DLL_PATH + `${anomalyName}.dll`, {
+  const Library = new FFI.Library(path.join(DLL_PATH, `${anomalyName}.dll`), {
     initEngine: ['bool', ['string', 'int', 'int', 'int', 'int', 'int']],
 
     destroyEngine: ['bool', []],
@@ -41,21 +42,6 @@ const anomaly = (anomalyName) => {
         'double*',
         'string',
         'string',
-      ],
-    ],
-
-    getChipCoors: [
-      'void',
-      [
-        'int',
-        'int',
-        'int',
-        'double *',
-        'double*',
-        'double*',
-        'double*',
-        'double*',
-        'double *',
       ],
     ],
 

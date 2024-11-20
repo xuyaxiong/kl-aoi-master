@@ -1,4 +1,5 @@
 const FFI = require('ffi-napi');
+const path = require('path');
 import AppConfig from '../app.config';
 const DLL_PATH = AppConfig.DLL_PATH;
 
@@ -9,7 +10,7 @@ const wafer = () => {
   pathArray.unshift(DLL_PATH);
   process.env.PATH = pathArray.join(';');
 
-  const Library = new FFI.Library(DLL_PATH + 'wafer', {
+  const Library = new FFI.Library(path.join(DLL_PATH, 'wafer.dll'), {
     init_camera: ['int', ['string']],
     camera_type: ['string', ['int']],
     camera_model: ['string', ['int']],

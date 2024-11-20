@@ -1,4 +1,5 @@
 const FFI = require('ffi-napi');
+const path = require('path');
 import AppConfig from '../app.config';
 const DLL_PATH = AppConfig.DLL_PATH;
 
@@ -8,8 +9,8 @@ export const rectify = () => {
   const pathArray = process.env.PATH.split(';');
   pathArray.unshift(DLL_PATH);
   process.env.PATH = pathArray.join(';');
-  
-  const Library = new FFI.Library(DLL_PATH + 'rectify', {
+
+  const Library = new FFI.Library(path.join(DLL_PATH, 'rectify.dll'), {
     estimateAccuratePositionCoor: [
       'int',
       [
@@ -28,6 +29,21 @@ export const rectify = () => {
         'double *',
         'double *',
         'double*',
+      ],
+    ],
+
+    getChipCoors: [
+      'void',
+      [
+        'int',
+        'int',
+        'int',
+        'double *',
+        'double*',
+        'double*',
+        'double*',
+        'double*',
+        'double *',
       ],
     ],
 

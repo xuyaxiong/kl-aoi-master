@@ -1,4 +1,5 @@
 const FFI = require('ffi-napi');
+const path = require('path');
 import AppConfig from '../app.config';
 const DLL_PATH = AppConfig.DLL_PATH;
 
@@ -7,7 +8,7 @@ const shmem = () => {
   pathArray.unshift(DLL_PATH);
   process.env.PATH = pathArray.join(';');
 
-  const Library = new FFI.Library(DLL_PATH + 'shmem', {
+  const Library = new FFI.Library(path.join(DLL_PATH, 'shmem.dll'), {
     crop: [
       'void',
       ['uchar *', 'int', 'int', 'int', 'int', 'uchar *', 'int', 'int', 'int'],
