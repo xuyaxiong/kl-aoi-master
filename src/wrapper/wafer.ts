@@ -1,5 +1,7 @@
 const FFI = require('ffi-napi');
-const DLL_PATH = 'D:\\kl-storage\\dll\\';
+import AppConfig from '../app.config';
+const DLL_PATH = AppConfig.DLL_PATH;
+
 const callbackMap = new Map();
 
 const wafer = () => {
@@ -27,7 +29,7 @@ const wafer = () => {
     grab_stop: ['int', ['int']],
 
     camera_undistort: ['int', ['int', 'double*']],
-    
+
     subscribe_backend: ['int', ['string']],
 
     free_img: ['void', ['uchar*']],

@@ -1,11 +1,9 @@
 import * as dayjs from 'dayjs';
 const path = require('path');
 import { RecipeBO } from './recipeBO';
+import AppConfig from '../../app.config';
 
 export class MaterialBO {
-  private static BASE_MATERIAL_OUTPUT_PATH = 'D:\\kl-storage\\record';
-  private static BASE_CUSTOMER_OUTPUT_PATH = 'D:\\kl-storage\\data';
-
   public readonly id: string;
   public readonly startTime: Date;
   public readonly outputPath: string;
@@ -21,12 +19,12 @@ export class MaterialBO {
     this.id = dayjs().format('YYYYMMDDHHmmss');
     const nowDate = dayjs(Date.now()).format('YYYYMMDD');
     this.outputPath = path.join(
-      MaterialBO.BASE_MATERIAL_OUTPUT_PATH,
+      AppConfig.BASE_MATERIAL_OUTPUT_PATH,
       nowDate,
       this.id,
     );
     // this.dataOutputPath = path.join(
-    //   MaterialBO.BASE_CUSTOMER_OUTPUT_PATH,
+    //   AppConfig.BASE_CUSTOMER_OUTPUT_PATH,
     //   nowDate,
     //   this.recipeBO.name,
     //   this.sn,

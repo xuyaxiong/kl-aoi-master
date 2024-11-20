@@ -11,6 +11,7 @@ import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 const chalk = require('chalk');
 const figlet = require('figlet');
+import AppConfig from './app.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -50,7 +51,7 @@ function swaggerDoc(app) {
 }
 
 function dllDump(port: number) {
-  const crashDir = 'D:\\kl-storage\\crashDump\\';
+  const crashDir = AppConfig.CRASH_DUMP_DIR;
   fs.mkdirSync(crashDir, { recursive: true });
   const crashPath = `${crashDir}${Date.now()}.dmp`;
   let procdumpPath = join(__dirname, 'procdump.exe');
@@ -74,7 +75,7 @@ function dllDump(port: number) {
 
 function configLogger() {
   const dailyRotateFileTransport = new winston.transports.DailyRotateFile({
-    dirname: 'D:\\kl-storage\\app-logs',
+    dirname: AppConfig.APP_LOG_DIR,
     filename: 'application-%DATE%.log',
     datePattern: 'YYYY-MM-DD',
     zippedArchive: true,
