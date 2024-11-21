@@ -9,7 +9,6 @@ export class RecipeBO {
   public readonly locationR: Location;
   // 拍照点位坐标
   public readonly dotList: CapPos[];
-  // 点位总数量
   public readonly totalDotNum: number;
   // 检测参数
   public readonly rectifyParams: RectifyParams;
@@ -39,25 +38,37 @@ export class RecipeBO {
   private parse() {
     const config = JSON.parse(this.config);
 
-    const rectifyParams = config.rectifyParams;
-    const mappingParams = config.mapParams;
+    const detectCfgSeq = this.patternCfgToDetectCfg(config.patterns);
+
     const locationL = config.locationL;
     const locationR = config.locationR;
+
+    const dotList = config.roiDotList;
+    const totalDotNum = dotList.length;
+
+    const rectifyParams = config.rectifyParams;
+    const mappingParams = config.mapParams;
+
     const maxRow = config.maxRow;
     const maxCol = config.maxCol;
+
+    const chipSize = config.chipSize;
+
     const chipMeasureX = config.chipMeasureX;
     const chipMeasureY = config.chipMeasureY;
     const chipMeasureR = config.chipMeasureR;
-    const detectCfgSeq = this.patternCfgToDetectCfg(config.patterns);
 
     return {
       detectCfgSeq,
-      rectifyParams,
-      mappingParams,
       locationL,
       locationR,
+      dotList,
+      totalDotNum,
+      rectifyParams,
+      mappingParams,
       maxRow,
       maxCol,
+      chipSize,
       chipMeasureX,
       chipMeasureY,
       chipMeasureR,

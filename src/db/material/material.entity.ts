@@ -11,10 +11,10 @@ export class Material {
   @Column()
   recipeId: number;
 
-  @Column({ default: () => 'NOW()' })
+  @Column()
   startTime: Date;
 
-  @Column({ nullable: true })
+  @Column()
   endTime: Date;
 
   @Column()

@@ -17,7 +17,8 @@ export class MaterialBO {
     public readonly recipeBO: RecipeBO,
   ) {
     this.id = dayjs().format('YYYYMMDDHHmmss');
-    const nowDate = dayjs(Date.now()).format('YYYYMMDD');
+    this.startTime = new Date();
+    const nowDate = dayjs(this.startTime).format('YYYYMMDD');
     this.outputPath = path.join(
       AppConfig.BASE_MATERIAL_OUTPUT_PATH,
       nowDate,
@@ -42,5 +43,16 @@ export class MaterialBO {
       'MEASURE',
     );
     this.detectParamPath = path.join(this.outputPath, 'detectParams');
+  }
+
+  public mapToMaterial() {
+    return {
+      sn: this.sn,
+      recipeId: this.recipeBO.id,
+      outputPath: this.outputPath,
+      dataOutputPath: this.dataOutputPath,
+      startTime: this.startTime,
+      endTime: new Date(),
+    };
   }
 }

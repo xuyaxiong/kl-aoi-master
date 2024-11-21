@@ -48,6 +48,7 @@ import {
   objToFile,
   parseReportPos,
 } from './detect.utils';
+import { MaterialService } from '../db/material/material.service';
 
 enum DetectStatus {
   IDLE,
@@ -77,6 +78,7 @@ export class DetectService {
     private readonly configService: ConfigService,
     private readonly plcService: PlcService,
     private readonly cameraService: CameraService,
+    private readonly materialService: MaterialService,
     private readonly recipeService: RecipeService,
     private readonly flawService: FlawService,
   ) {
@@ -172,6 +174,9 @@ export class DetectService {
           this.materialBO.recipeBO.chipSize,
           this.materialBO.measureDefectCapImgPath,
         );
+
+        // ! 插入material
+        this.materialService.create(this.materialBO.mapToMaterial());
       },
     );
     // this.eventEmitter.emit(`startCorrection`);
