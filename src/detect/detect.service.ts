@@ -61,7 +61,6 @@ enum DetectStatus {
 export class DetectService {
   private readonly logger = new Logger(DetectService.name);
   private detectInfoQueue: DetectInfoQueue;
-  private detectCfgSeq: DetectCfg[];
   private detectedCounter: DetectedCounter;
   private totalImgCnt: number;
   private totalDetectCnt: number;
@@ -86,8 +85,6 @@ export class DetectService {
       this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
     this.anomalyRemoteCfg =
       this.configService.get<AnomalyRemoteCfg>('anomalyRemoteCfg');
-    this.detectCfgSeq = this.configService.get<DetectCfg[]>('detectCfgSeq'); // TODO 从配方中获取
-    console.log('detectCfgSeq =', this.detectCfgSeq);
     this.setReportDataHandler();
   }
 
@@ -97,14 +94,17 @@ export class DetectService {
     this.materialBO = await this.initMaterialBO(sn, recipeId);
     console.log(this.materialBO);
     this.detectInfoQueue = new DetectInfoQueue(
-      this.detectCfgSeq,
+      this.materialBO.recipeBO.detectCfgSeq,
       this.materialBO.outputPath,
     );
     this.anomalyRawList = [];
     this.measureRawList = [];
     this.anomalyDefectCapInfoList = [];
     const totalPointCnt = this.materialBO.recipeBO.totalDotNum;
-    const detectCount = this.calcDetectCount(this.detectCfgSeq, totalPointCnt);
+    const detectCount = this.calcDetectCount(
+      this.materialBO.recipeBO.detectCfgSeq,
+      totalPointCnt,
+    );
     this.totalImgCnt = detectCount.totalImgCnt;
     this.totalDetectCnt = detectCount.totalDetectCnt;
     this.totalAnomalyCnt = detectCount.totalAnomalyCnt;

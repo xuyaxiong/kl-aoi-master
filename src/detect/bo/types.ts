@@ -105,3 +105,14 @@ export interface Location {
   tplHeight: number;
   modelFile: string;
 }
+
+export interface PatternCfg {
+  id: number;
+  name: string;
+  lightType: string;
+  modelFile?: string;
+  anomaly?: number;
+  ignores?: number[];
+  enableAnomaly: boolean;
+  enableMeasure: boolean;
+}

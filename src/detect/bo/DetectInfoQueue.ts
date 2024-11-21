@@ -39,6 +39,7 @@ export class DetectInfoQueue {
       const idx = this.imgCnt % this.detectCfgLoop.length;
       const detectCfg = this.detectCfgLoop[idx];
       const lightType = detectCfg.lightType;
+      const lightName = detectCfg.name;
       const detectTypeList = detectCfg.detectTypeList;
       this.imgCnt += 1;
       const pos = this.posQueue.shift();
@@ -47,14 +48,6 @@ export class DetectInfoQueue {
       assert(imagePtr !== undefined, '图片不能为空');
       // 缓存图片指针，数据合并完成后截取缺陷小图用
       this.imageInfoMap.set(imagePtr.frameId, { imagePtr, reportPos: pos });
-      let lightName = '';
-      if (lightType === LightType.COAXIAL) {
-        lightName = '同轴';
-      } else if (lightType === LightType.RING) {
-        lightName = '环光';
-      } else {
-        throw new Error('不存在该类型光源');
-      }
       const imgName = `${imagePtr.frameId}_${pos.x}_${pos.y}.jpg`;
       const dir = path.join(this.outputPath, 'imgs', `${idx}.${lightName}`);
       const fullpath = saveImagePtr(imagePtr, dir, imgName);
