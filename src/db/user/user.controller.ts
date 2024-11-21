@@ -10,6 +10,7 @@ import {
 import { UserService } from './user.service';
 import { User } from './user.entity';
 import HttpResponse from 'src/utils/api_res';
+import { LoginParam } from './user.param';
 
 @Controller('user')
 export class UserController {
@@ -22,7 +23,7 @@ export class UserController {
 
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<HttpResponse<User>> {
-    return HttpResponse.ok(await this.userService.findOne(id));
+    return HttpResponse.ok(await this.userService.findById(id));
   }
 
   @Post()
@@ -41,5 +42,14 @@ export class UserController {
   @Delete(':id')
   async delete(@Param('id') id: number): Promise<HttpResponse<void>> {
     return HttpResponse.ok(await this.userService.delete(id));
+  }
+
+  @Post('login')
+  async login(@Body() loginParam: LoginParam) {
+    try {
+      return HttpResponse.ok(await this.userService.login(loginParam));
+    } catch (error) {
+      return HttpResponse.err(error.message);
+    }
   }
 }

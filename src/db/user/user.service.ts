@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { LoginParam } from './user.param';
 
 @Injectable()
 export class UserService {
@@ -11,11 +12,17 @@ export class UserService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    const userList = await this.userRepository.find();
+    userList.forEach((user) => {
+      delete user.password;
+    });
+    return userList;
   }
 
-  async findOne(id: number): Promise<User> {
-    return this.userRepository.findOneBy({ id });
+  async findById(id: number): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id });
+    delete user.password;
+    return user;
   }
 
   async create(user: Partial<User>): Promise<User> {
@@ -25,10 +32,18 @@ export class UserService {
 
   async update(id: number, updateUser: Partial<User>): Promise<User> {
     await this.userRepository.update(id, updateUser);
-    return this.findOne(id);
+    return this.findById(id);
   }
 
   async delete(id: number): Promise<void> {
     await this.userRepository.delete(id);
+  }
+
+  async login(loginParam: LoginParam) {
+    const user = await this.userRepository.findOneBy({ id: loginParam.id });
+    if (!user) throw '无此用户';
+    if (user.password !== loginParam.password.trim()) throw '密码错误';
+    if (user.isLock) throw '用户已被锁定';
+    return await this.update(user.id, { loginTime: new Date() });
   }
 }

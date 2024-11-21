@@ -11,6 +11,6 @@ export class Recipe {
   @Column()
   config: string;
 
-  @Column({ nullable: true })
+  @Column({ default: 1 })
   sort: number;
 }

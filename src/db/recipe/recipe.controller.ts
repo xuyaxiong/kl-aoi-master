@@ -10,6 +10,7 @@ import {
 import { RecipeService } from './recipe.service';
 import { Recipe } from './recipe.entity';
 import HttpResponse from 'src/utils/api_res';
+import { CopyRecipeParam } from './recipe.param';
 
 @Controller('recipe')
 export class RecipeController {
@@ -43,5 +44,19 @@ export class RecipeController {
   @Delete(':id')
   async delete(@Param('id') id: number): Promise<HttpResponse<void>> {
     return HttpResponse.ok(await this.recipeService.delete(id));
+  }
+
+  @Post('copy')
+  async copyById(@Body() copyRecipeParam: CopyRecipeParam): Promise<any> {
+    try {
+      return HttpResponse.ok(
+        await this.recipeService.copyById(
+          copyRecipeParam.id,
+          copyRecipeParam.name,
+        ),
+      );
+    } catch (error) {
+      return HttpResponse.err(error.message);
+    }
   }
 }

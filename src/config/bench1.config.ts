@@ -10,4 +10,6 @@ export default () => ({
     host: '192.168.0.3',
     port: 5000,
   },
+
+  recipePath: 'D:\\kl-storage\\gallery\\recipe\\',
 });
