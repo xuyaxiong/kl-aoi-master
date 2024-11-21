@@ -87,6 +87,9 @@ export class RecipeBO {
       0.16670243346758823, 0.14292144593974596, 0.7620682672804033,
       0.8570638522485828,
     ];
+    const chipMeasureX = [-1.5, 1.5];
+    const chipMeasureY = [-1.5, 1.5];
+    const chipMeasureR = [-1.5, 1.5];
 
     return {
       locationL,
@@ -96,6 +99,9 @@ export class RecipeBO {
       lensParams,
       mappingParams,
       chipSize,
+      chipMeasureX,
+      chipMeasureY,
+      chipMeasureR,
     };
   }
 

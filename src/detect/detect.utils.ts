@@ -144,18 +144,39 @@ export async function capAnomalyDefectImgs(
   }
 }
 
+// 需要根据测量结果(dx, dy, dr)过滤
+export function filtrateMeasureDefect(
+  measureDataItemList: MeasureDataItem[],
+  chipMeasureX: number[],
+  chipMeasureY: number[],
+  chipMeasureR: number[],
+) {
+  return measureDataItemList.filter((item) => {
+    const dx = item[4];
+    const dy = item[5];
+    const dr = item[6];
+    return (
+      dx < chipMeasureX[0] ||
+      dx > chipMeasureX[1] ||
+      dy < chipMeasureY[0] ||
+      dy > chipMeasureY[1] ||
+      dr < chipMeasureR[0] ||
+      dr > chipMeasureR[1]
+    );
+  });
+}
+
 // 截取测量缺陷小图
 export async function capMeasureDefectImgs(
   imageInfoMap: Map<number, ImageInfo>,
-  anomalyDefectCapInfoList: MeasureDataItem[],
+  measureDefectDataItemList: MeasureDataItem[],
   lensParams: LensParams,
   mappingParams: MappingParams,
   rectifyParams: RectifyParams,
   chipSize: number[],
   savePath: string,
 ) {
-  // TODO 需要根据测量结果(dx, dy, dr)过滤
-  for (const item of anomalyDefectCapInfoList.slice(0, 10)) {
+  for (const item of measureDefectDataItemList) {
     const [fno, R, C, chipId, dx, dy, dr] = item;
     const { imagePtr, reportPos } = imageInfoMap.get(fno);
     const [left, top, width, height] = getChipCoors(

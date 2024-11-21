@@ -44,6 +44,7 @@ import {
   deDupMeasureDataList,
   exportAnomalyDataList,
   exportMeasureDataList,
+  filtrateMeasureDefect,
   objToFile,
   parseReportPos,
 } from './detect.utils';
@@ -154,10 +155,17 @@ export class DetectService {
           this.anomalyDefectCapInfoList,
           this.materialBO.anomalyDefectCapImgPath,
         );
+
         // 截取测量缺陷小图
+        const measureDefectDataItemList = filtrateMeasureDefect(
+          dedupMeasureDataList, // ! 传入去重后的测量结果
+          this.materialBO.recipeBO.chipMeasureX,
+          this.materialBO.recipeBO.chipMeasureY,
+          this.materialBO.recipeBO.chipMeasureR,
+        );
         await capMeasureDefectImgs(
           this.detectInfoQueue.imageInfoMap,
-          this.measureRawList,
+          measureDefectDataItemList,
           this.materialBO.recipeBO.lensParams,
           this.materialBO.recipeBO.mappingParams,
           this.materialBO.recipeBO.rectifyParams,
