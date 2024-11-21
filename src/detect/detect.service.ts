@@ -238,12 +238,20 @@ export class DetectService {
         const detectInfoList = this.detectInfoQueue.shift();
         // console.log('detectInfoList =', detectInfoList);
         for (const detectInfo of detectInfoList) {
-          const { pointIdx, pos, imagePtr, lightType, detectType } = detectInfo;
+          const {
+            pointIdx,
+            pos,
+            imagePtr,
+            lightType,
+            detectType,
+            patternId,
+            cntPerLightType,
+          } = detectInfo;
           const fno = imagePtr.frameId;
           this.logger.log(
             `\n点位: ${pointIdx}
 出图帧号：${fno}
-光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'}
+光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'} 数量: ${cntPerLightType}
 检测类型: ${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
           );
           if (detectType === DetectType.ANOMALY) {
@@ -253,7 +261,7 @@ export class DetectService {
               null,
             );
             // flawList 插入数据库
-            this.insertFlaws(flawList);
+            this.insertFlaws(patternId, cntPerLightType, flawList);
             const anomalyDefectCapInfoArr = flawList.map((item) => {
               return {
                 fno: item.fno,
@@ -405,7 +413,11 @@ export class DetectService {
     }
   }
 
-  private async insertFlaws(flawList: AnomalyFlawItem[]) {
+  private async insertFlaws(
+    patternId: number,
+    cntPerLightType: number,
+    flawList: AnomalyFlawItem[],
+  ) {
     const flawParts = _.chunk(flawList, 2000);
     for await (const part of flawParts) {
       const flawEntityList = part.map((flaw: AnomalyFlawItem) => {
@@ -414,7 +426,8 @@ export class DetectService {
           type: flaw.type,
           position: flaw.position.toString(),
           materialId: this.materialBO.id,
-          patternId: 0, // ? 好像要区分不同pattern
+          patternId,
+          imgIndex: cntPerLightType - 1,
         };
       });
       await this.flawService.saveInBatch(flawEntityList);

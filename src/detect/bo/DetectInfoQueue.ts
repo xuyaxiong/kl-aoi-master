@@ -15,11 +15,16 @@ export class DetectInfoQueue {
   private posQueue: ReportPos[] = [];
   private imagePtrQueue: ImagePtr[] = [];
   public readonly imageInfoMap = new Map<number, ImageInfo>();
+  public readonly imgCntPerLightType = new Map<number, number>();
 
   constructor(
     private detectCfgLoop: DetectCfg[],
     private outputPath: string,
-  ) {}
+  ) {
+    detectCfgLoop.forEach((detectCfg) => {
+      this.imgCntPerLightType.set(detectCfg.lightType, 0);
+    });
+  }
 
   public addPos(reportPos: ReportPos) {
     this.posQueue.push(reportPos);
@@ -40,12 +45,15 @@ export class DetectInfoQueue {
       const detectCfg = this.detectCfgLoop[idx];
       const lightType = detectCfg.lightType;
       const lightName = detectCfg.name;
+      const patternId = detectCfg.patternId;
       const detectTypeList = detectCfg.detectTypeList;
-      this.imgCnt += 1;
       const pos = this.posQueue.shift();
       const imagePtr = this.imagePtrQueue.shift();
       assert(pos !== undefined, '坐标不能为空');
       assert(imagePtr !== undefined, '图片不能为空');
+      const origImgCntPerLightType = this.imgCntPerLightType.get(lightType);
+      this.imgCntPerLightType.set(lightType, origImgCntPerLightType + 1);
+      this.imgCnt += 1;
       // 缓存图片指针，数据合并完成后截取缺陷小图用
       this.imageInfoMap.set(imagePtr.frameId, { imagePtr, reportPos: pos });
       const imgName = `${imagePtr.frameId}_${pos.x}_${pos.y}.jpg`;
@@ -60,6 +68,8 @@ export class DetectInfoQueue {
           lightType,
           imagePtr,
           detectType,
+          patternId,
+          cntPerLightType: this.imgCntPerLightType.get(lightType),
         });
       }
       return tmpDetectInfoList;

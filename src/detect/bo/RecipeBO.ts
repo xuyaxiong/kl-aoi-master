@@ -138,6 +138,7 @@ export class RecipeBO {
     const detectCfgSeq = [];
     for (const patternCfg of patternCfgList) {
       const detectCfg = { detectTypeList: [] };
+      detectCfg['patternId'] = patternCfg['id'];
       detectCfg['name'] = patternCfg['name'];
       detectCfg['lightType'] =
         patternCfg['lightType'] === 'COAXIAL'

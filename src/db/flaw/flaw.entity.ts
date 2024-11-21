@@ -22,4 +22,7 @@ export class Flaw {
 
   @Column({ nullable: true })
   affirmType?: number;
+
+  @Column()
+  imgIndex: number;
 }

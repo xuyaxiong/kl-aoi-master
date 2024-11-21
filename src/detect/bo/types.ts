@@ -28,9 +28,12 @@ export interface DetectInfo {
   imagePtr: ImagePtr;
   lightType: LightType;
   detectType: DetectType;
+  patternId: number;
+  cntPerLightType: number;
 }
 
 export interface DetectCfg {
+  patternId: number;
   name: string;
   lightType: LightType;
   detectTypeList: DetectType[];
