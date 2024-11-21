@@ -6,6 +6,7 @@ const _ = require('lodash');
 import * as KLBuffer from 'kl-buffer';
 import waferDll from '../wrapper/wafer';
 import { Camera, ImagePtr } from './camera.bo';
+import { SysDictService } from '../db/dict/SysDict.service';
 
 @Injectable()
 export class CameraService {
@@ -17,8 +18,10 @@ export class CameraService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
+    private readonly sysDictService: SysDictService,
   ) {
     this.detectCamType = this.configService.get<string>('detectCamType');
+    // TODO 从数据库中获取
     this.undistortParams = this.configService.get<number[]>('undistortParams');
     this.initCamera();
   }
@@ -141,5 +144,17 @@ export class CameraService {
       height,
       channel,
     };
+  }
+
+  // 查询相机配置
+  public async getCamCfg() {
+    const camCfgList = await this.sysDictService.getDictItemListByTypeCode({
+      typeCode: 'SYS_CAM_CFG',
+    });
+    const camCfg = {};
+    camCfgList.forEach((item) => {
+      camCfg[item['code']] = JSON.parse(item['value']);
+    });
+    return camCfg;
   }
 }

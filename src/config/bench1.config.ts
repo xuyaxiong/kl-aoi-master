@@ -1,5 +1,3 @@
-import { DetectType, LightType } from 'src/detect/bo';
-
 export default () => ({
   detectCamType: 'Hik',
   undistortParams: [
@@ -11,13 +9,5 @@ export default () => ({
     name: 'PLC通信',
     host: '192.168.0.3',
     port: 5000,
-  },
-  measureRemoteCfg: {
-    host: 'http://127.0.0.1',
-    port: 3100,
-  },
-  anomalyRemoteCfg: {
-    host: 'http://127.0.0.1',
-    port: 3200,
   },
 });

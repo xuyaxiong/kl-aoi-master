@@ -80,4 +80,15 @@ export class CameraController {
       return HttpResponse.err(error.message);
     }
   }
+
+  @Get('camCfg')
+  @ApiOperation({ summary: '获取相机配置' })
+  async getCamCfg(@Param('id') id: number) {
+    try {
+      const camCfg = await this.cameraService.getCamCfg();
+      return HttpResponse.ok(camCfg);
+    } catch (error) {
+      return HttpResponse.err(error.message);
+    }
+  }
 }

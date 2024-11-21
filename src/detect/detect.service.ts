@@ -25,6 +25,7 @@ import {
   DetectCfg,
   DetectedCounter,
   DetectInfoQueue,
+  DetectNumCount,
   DetectType,
   LightType,
   MaterialBO,
@@ -49,6 +50,7 @@ import {
   parseReportPos,
 } from './detect.utils';
 import { MaterialService } from '../db/material/material.service';
+import AppConfig from '../app.config';
 
 enum DetectStatus {
   IDLE,
@@ -62,10 +64,6 @@ export class DetectService {
   private readonly logger = new Logger(DetectService.name);
   private detectInfoQueue: DetectInfoQueue;
   private detectedCounter: DetectedCounter;
-  private totalImgCnt: number;
-  private totalDetectCnt: number;
-  private totalAnomalyCnt: number;
-  private totalMeasureCnt: number;
   private currImgCnt: number;
   private materialBO: MaterialBO;
   private measureRemoteCfg: MeasureRemoteCfg;
@@ -81,10 +79,8 @@ export class DetectService {
     private readonly recipeService: RecipeService,
     private readonly flawService: FlawService,
   ) {
-    this.measureRemoteCfg =
-      this.configService.get<MeasureRemoteCfg>('measureRemoteCfg');
-    this.anomalyRemoteCfg =
-      this.configService.get<AnomalyRemoteCfg>('anomalyRemoteCfg');
+    this.measureRemoteCfg = AppConfig.measureRemoteCfg;
+    this.anomalyRemoteCfg = AppConfig.anomalyRemoteCfg;
     this.setReportDataHandler();
   }
 
@@ -105,24 +101,17 @@ export class DetectService {
       this.materialBO.recipeBO.detectCfgSeq,
       totalPointCnt,
     );
-    this.totalImgCnt = detectCount.totalImgCnt;
-    this.totalDetectCnt = detectCount.totalDetectCnt;
-    this.totalAnomalyCnt = detectCount.totalAnomalyCnt;
-    this.totalMeasureCnt = detectCount.totalMeasureCnt;
     this.currImgCnt = 0;
     this.logger.warn(`******************************`);
     this.logger.warn(`总点位数: ${totalPointCnt}`);
-    this.logger.warn(`总图片数: ${this.totalImgCnt}`);
-    this.logger.warn(`总检测数: ${this.totalDetectCnt}`);
-    this.logger.warn(`总外观数: ${this.totalAnomalyCnt}`);
-    this.logger.warn(`总测量数: ${this.totalMeasureCnt}`);
+    this.logger.warn(`总图片数: ${detectCount.totalImgCnt}`);
+    this.logger.warn(`总检测数: ${detectCount.totalDetectCnt}`);
+    this.logger.warn(`总外观数: ${detectCount.totalAnomalyCnt}`);
+    this.logger.warn(`总测量数: ${detectCount.totalMeasureCnt}`);
     this.logger.warn(`******************************`);
     this.detectedCounter = new DetectedCounter(
       totalPointCnt,
-      this.totalImgCnt,
-      this.totalDetectCnt,
-      this.totalAnomalyCnt,
-      this.totalMeasureCnt,
+      detectCount,
       async () => {
         // 原始测量结果去重
         const dedupMeasureDataList = deDupMeasureDataList(this.measureRawList);
@@ -180,7 +169,11 @@ export class DetectService {
       },
     );
     // this.eventEmitter.emit(`startCorrection`);
-    mockImgSeqGenerator(this.eventEmitter, this.totalImgCnt, 300);
+    mockImgSeqGenerator(
+      this.eventEmitter,
+      this.detectedCounter.detectCount.totalImgCnt,
+      300,
+    );
   }
 
   @OnEvent('startCorrection')
@@ -338,7 +331,10 @@ export class DetectService {
     return { x: res[0].pos, y: res[1].pos };
   }
 
-  private calcDetectCount(detectCfgSeq: DetectCfg[], totalPointCnt: number) {
+  private calcDetectCount(
+    detectCfgSeq: DetectCfg[],
+    totalPointCnt: number,
+  ): DetectNumCount {
     const detectCntPerPoint = detectCfgSeq
       .map((detectCfg) => detectCfg.detectTypeList.length)
       .reduce((acc, curr) => acc + curr, 0);

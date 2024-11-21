@@ -116,3 +116,10 @@ export interface PatternCfg {
   enableAnomaly: boolean;
   enableMeasure: boolean;
 }
+
+export interface DetectNumCount {
+  totalImgCnt: number;
+  totalDetectCnt: number;
+  totalAnomalyCnt: number;
+  totalMeasureCnt: number;
+}
