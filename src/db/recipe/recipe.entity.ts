@@ -8,7 +8,7 @@ export class Recipe {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ type: 'text' })
   config: string;
 
   @Column({ default: 1 })

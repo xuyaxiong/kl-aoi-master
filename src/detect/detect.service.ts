@@ -147,13 +147,14 @@ export class DetectService {
           this.materialBO.anomalyDefectCapImgPath,
         );
 
-        // 截取测量缺陷小图
+        // 获取测量缺陷小图信息
         const measureDefectDataItemList = filtrateMeasureDefect(
           dedupMeasureDataList, // ! 传入去重后的测量结果
           this.materialBO.recipeBO.chipMeasureX,
           this.materialBO.recipeBO.chipMeasureY,
           this.materialBO.recipeBO.chipMeasureR,
         );
+        // 截取测量缺陷小图
         await capMeasureDefectImgs(
           this.detectInfoQueue.imageInfoMap,
           measureDefectDataItemList,
@@ -262,6 +263,7 @@ export class DetectService {
             );
             // flawList 插入数据库
             this.insertFlaws(patternId, cntPerLightType, flawList);
+            // 保存外观缺陷小图信息
             const anomalyDefectCapInfoArr = flawList.map((item) => {
               return {
                 fno: item.fno,
@@ -276,6 +278,7 @@ export class DetectService {
               };
             });
             this.anomalyDefectCapInfoList.push(...anomalyDefectCapInfoArr);
+            // 保存外观检测结果
             this.anomalyRawList.push(...anomalyList);
             this.detectedCounter.plusAnomalyCnt();
           } else if (detectType === DetectType.MEASURE) {
