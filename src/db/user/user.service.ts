@@ -41,9 +41,10 @@ export class UserService {
 
   async login(loginParam: LoginParam) {
     const user = await this.userRepository.findOneBy({ id: loginParam.id });
-    if (!user) throw '无此用户';
-    if (user.password !== loginParam.password.trim()) throw '密码错误';
-    if (user.isLock) throw '用户已被锁定';
+    if (!user) throw new Error('无此用户');
+    if (user.password !== loginParam.password.trim())
+      throw new Error('密码错误');
+    if (user.isLock) throw new Error('用户已被锁定');
     return await this.update(user.id, { loginTime: new Date() });
   }
 }
