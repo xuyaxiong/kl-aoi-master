@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class Material {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn({ length: 30 })
   id: string;
 
   @Column()

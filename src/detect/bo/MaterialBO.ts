@@ -47,6 +47,7 @@ export class MaterialBO {
 
   public mapToMaterial() {
     return {
+      id: this.id,
       sn: this.sn,
       recipeId: this.recipeBO.id,
       outputPath: this.outputPath,

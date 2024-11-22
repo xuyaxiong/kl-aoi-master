@@ -10,14 +10,15 @@ import {
 import { FlawService } from './flaw.service';
 import { Flaw } from './flaw.entity';
 import HttpResponse from 'src/utils/api_res';
+import { QueryParam } from './flaw.param';
 
 @Controller('flaw')
 export class FlawController {
   constructor(private readonly flawService: FlawService) {}
 
   @Get()
-  async findAll(): Promise<HttpResponse<Flaw[]>> {
-    return HttpResponse.ok(await this.flawService.findAll());
+  async findAll(@Body() queryParam: QueryParam): Promise<HttpResponse<Flaw[]>> {
+    return HttpResponse.ok(await this.flawService.findAll(queryParam));
   }
 
   @Get(':id')
