@@ -1,15 +1,16 @@
 export default () => ({
   detectCamType: 'Hik',
-  undistortParams: [
-    316620.2744931842, 316800.844462945, 2518.324205873608, 2566.707832693061,
-    5, 13.23828121483488, -0.02742307931458463, 0.02139915665827405,
-    -0.00239816749474035, -2.202294417911529e-6, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  ],
   plcTcpConfig: {
     name: 'PLC通信',
     host: '192.168.0.3',
     port: 5000,
   },
 
+  appPath: 'D:\\kl-storage\\',
   recipePath: 'D:\\kl-storage\\gallery\\recipe\\',
+  dbPath: 'D:\\kl-storage\\gallery\\db\\',
+  samplePath: 'D:\\kl-storage\\gallery\\sample\\',
+  width: 5120,
+  height: 5120,
+  channel: 3,
 });

@@ -14,7 +14,6 @@ import '../extension';
 export class CameraService {
   private readonly logger = new Logger(CameraService.name);
   private detectCamType: string;
-  private undistortParams: number[];
   private cameraList: Array<Camera> = [];
 
   constructor(
@@ -23,19 +22,20 @@ export class CameraService {
     private readonly sysDictService: SysDictService,
   ) {
     this.detectCamType = this.configService.get<string>('detectCamType');
-    // TODO 从数据库中获取
-    this.undistortParams = this.configService.get<number[]>('undistortParams');
-    this.initCamera();
+    // 从数据库中获取镜头畸变参数
+    this.getCamCfgByName('undistortParams').then((undistortParams) => {
+      this.initCamera(undistortParams);
+    });
   }
 
-  private initCamera() {
+  private initCamera(undistortParams: number[]) {
     const camCount = waferDll.init_camera(this.detectCamType);
     for (let i = 0; i < camCount; ++i) {
       const camera = this.getCamInfoById(i);
       this.cameraList.push(camera);
       this.logger.verbose(`相机${i}初始化完成`);
 
-      const params = this.undistortParams.doubleToBuffer();
+      const params = undistortParams.doubleToBuffer();
       waferDll.camera_undistort(i, params);
     }
   }
@@ -153,6 +153,16 @@ export class CameraService {
       0,
       undistortParams === null ? null : undistortParams.doubleToBuffer(),
     );
+  }
+
+  // 查询相机指定参数
+  public async getCamCfgByName(name: string) {
+    const dictItem = await this.sysDictService.getDictItemByCode({
+      typeCode: 'SYS_CAM_CFG',
+      code: name,
+    });
+    if (dictItem) return JSON.parse(dictItem.value);
+    else return [];
   }
 
   // 查询相机参数

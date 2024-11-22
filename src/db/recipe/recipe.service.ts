@@ -8,14 +8,25 @@ import * as fsExtra from 'fs-extra';
 
 @Injectable()
 export class RecipeService {
+  private recipePath: string;
   constructor(
     @InjectRepository(Recipe)
     private readonly recipeRepository: Repository<Recipe>,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.recipePath = this.configService.get<string>('recipePath');
+  }
+
+  private formatRecipePath(id: number, name: string) {
+    return path.join(this.recipePath, `${id}.${name}`);
+  }
 
   async findAll(): Promise<Recipe[]> {
-    return this.recipeRepository.find();
+    return this.recipeRepository.find({
+      order: {
+        sort: 'DESC',
+      },
+    });
   }
 
   async findById(id: number): Promise<Recipe> {
@@ -33,22 +44,29 @@ export class RecipeService {
   }
 
   async delete(id: number): Promise<void> {
-    await this.recipeRepository.delete(id);
+    const recipeToDelete = await this.findById(id);
+    if (recipeToDelete) {
+      const recipePath = this.formatRecipePath(
+        recipeToDelete.id,
+        recipeToDelete.name,
+      );
+      await this.recipeRepository.delete(id);
+      // 同步删除配方目录
+      fsExtra.remove(recipePath);
+    }
   }
 
   async copyById(origId: number, name: string) {
     const origRecipe = await this.findById(origId);
-    const newRecipeObj = { name, config: origRecipe.config };
-    const newRecipe = await this.create(newRecipeObj);
-    const recipePath = this.configService.get<string>('recipePath');
-    const origRecipePath = path.join(
-      recipePath,
-      `${origRecipe.id}.${origRecipe.name}`,
-    );
-    const newRecipePath = path.join(
-      recipePath,
-      `${newRecipe.id}.${newRecipe.name}`,
-    );
-    fsExtra.copySync(origRecipePath, newRecipePath);
+    if (origRecipe) {
+      const newRecipeObj = { name, config: origRecipe.config };
+      const newRecipe = await this.create(newRecipeObj);
+      const origRecipePath = this.formatRecipePath(
+        origRecipe.id,
+        origRecipe.name,
+      );
+      const newRecipePath = this.formatRecipePath(newRecipe.id, newRecipe.name);
+      fsExtra.copySync(origRecipePath, newRecipePath);
+    }
   }
 }
