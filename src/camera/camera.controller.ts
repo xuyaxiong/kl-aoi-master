@@ -1,8 +1,8 @@
-import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, Put } from '@nestjs/common';
 import { CameraService } from './camera.service';
 import HttpResponse from 'src/utils/api_res';
 import { ApiOperation } from '@nestjs/swagger';
-import { SetExposureTimeParam } from './camera.param';
+import { SetExposureTimeParam, UpdateCamCfgParam } from './camera.param';
 
 @Controller('camera')
 export class CameraController {
@@ -82,10 +82,21 @@ export class CameraController {
   }
 
   @Get('camCfg')
-  @ApiOperation({ summary: '获取相机配置' })
+  @ApiOperation({ summary: '获取相机参数' })
   async getCamCfg(@Param('id') id: number) {
     try {
       const camCfg = await this.cameraService.getCamCfg();
+      return HttpResponse.ok(camCfg);
+    } catch (error) {
+      return HttpResponse.err(error.message);
+    }
+  }
+
+  @Put('camCfg')
+  @ApiOperation({ summary: '更新相机参数' })
+  async updateCamCfg(@Body() updateCamCfgParam: UpdateCamCfgParam) {
+    try {
+      const camCfg = await this.cameraService.updateCamCfg(updateCamCfgParam);
       return HttpResponse.ok(camCfg);
     } catch (error) {
       return HttpResponse.err(error.message);

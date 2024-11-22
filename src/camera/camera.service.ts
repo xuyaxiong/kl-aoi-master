@@ -7,6 +7,7 @@ import * as KLBuffer from 'kl-buffer';
 import waferDll from '../wrapper/wafer';
 import { Camera, ImagePtr } from './camera.bo';
 import { SysDictService } from '../db/dict/SysDict.service';
+import { UpdateCamCfgParam } from './camera.param';
 
 @Injectable()
 export class CameraService {
@@ -146,7 +147,7 @@ export class CameraService {
     };
   }
 
-  // 查询相机配置
+  // 查询相机参数
   public async getCamCfg() {
     const camCfgList = await this.sysDictService.getDictItemListByTypeCode({
       typeCode: 'SYS_CAM_CFG',
@@ -156,5 +157,15 @@ export class CameraService {
       camCfg[item['code']] = JSON.parse(item['value']);
     });
     return camCfg;
+  }
+
+  // 更新相机参数
+  public async updateCamCfg(updateCamCfgParam: UpdateCamCfgParam) {
+    await this.sysDictService.updateDictItem({
+      typeCode: 'SYS_CAM_CFG',
+      code: updateCamCfgParam.name,
+      value: JSON.stringify(updateCamCfgParam.value),
+    });
+    return await this.getCamCfg();
   }
 }

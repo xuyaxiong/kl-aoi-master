@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Like, Repository } from 'typeorm';
 import { Material } from './material.entity';
+import { QueryParam } from './material.param';
+import { PageRes } from './material.types';
 
 @Injectable()
 export class MaterialService {
@@ -10,8 +12,46 @@ export class MaterialService {
     private readonly materialRepository: Repository<Material>,
   ) {}
 
-  async findAll(): Promise<Material[]> {
-    return this.materialRepository.find();
+  async findAll(queryParam: QueryParam): Promise<PageRes<Material>> {
+    const queryBuilder = this.materialRepository.createQueryBuilder('material');
+    if (queryParam.recipeId) {
+      queryBuilder.andWhere('material.recipeId = :recipeId', {
+        recipeId: `%${queryParam.recipeId}%`,
+      });
+    }
+    if (queryParam.materialId) {
+      queryBuilder.andWhere('material.id LIKE :materialId', {
+        materialId: `%${queryParam.materialId}%`,
+      });
+    }
+    if (queryParam.sn) {
+      queryBuilder.andWhere('material.sn LIKE :sn', {
+        sn: `%${queryParam.sn}%`,
+      });
+    }
+    if (queryParam.startTime) {
+      queryBuilder.andWhere('material.startTime > :start', {
+        start: queryParam.startTime[0],
+      });
+      queryBuilder.andWhere('material.startTime < :end', {
+        end: queryParam.startTime[1],
+      });
+    }
+    const skipNum = (queryParam.page - 1) * queryParam.pageSize;
+    const [data, total] = await queryBuilder
+      .orderBy('material.startTime', 'DESC')
+      .skip(skipNum)
+      .take(queryParam.pageSize)
+      .getManyAndCount();
+    return {
+      items: data,
+      pageInfo: {
+        total,
+        page: queryParam.page,
+        pageSize: queryParam.pageSize,
+        totalPage: Math.ceil(total / queryParam.pageSize),
+      },
+    };
   }
 
   async findOne(id: string): Promise<Material> {

@@ -9,15 +9,19 @@ import {
 } from '@nestjs/common';
 import { MaterialService } from './material.service';
 import { Material } from './material.entity';
-import HttpResponse from 'src/utils/api_res';
+import HttpResponse from '../../utils/api_res';
+import { QueryParam } from './material.param';
+import { PageRes } from './material.types';
 
 @Controller('material')
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
 
   @Get()
-  async findAll(): Promise<HttpResponse<Material[]>> {
-    return HttpResponse.ok(await this.materialService.findAll());
+  async findAll(
+    @Body() queryParam: QueryParam,
+  ): Promise<HttpResponse<PageRes<Material>>> {
+    return HttpResponse.ok(await this.materialService.findAll(queryParam));
   }
 
   @Get(':id')
