@@ -8,6 +8,7 @@ import waferDll from '../wrapper/wafer';
 import { Camera, ImagePtr } from './camera.bo';
 import { SysDictService } from '../db/dict/SysDict.service';
 import { UpdateCamCfgParam } from './camera.param';
+import '../extension';
 
 @Injectable()
 export class CameraService {
@@ -145,6 +146,13 @@ export class CameraService {
       height,
       channel,
     };
+  }
+
+  public undistort(undistortParams: number[]) {
+    waferDll.camera_undistort(
+      0,
+      undistortParams === null ? null : undistortParams.doubleToBuffer(),
+    );
   }
 
   // 查询相机参数

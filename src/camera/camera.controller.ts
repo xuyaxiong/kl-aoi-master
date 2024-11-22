@@ -2,7 +2,11 @@ import { Controller, Post, Body, Get, Query, Param, Put } from '@nestjs/common';
 import { CameraService } from './camera.service';
 import HttpResponse from 'src/utils/api_res';
 import { ApiOperation } from '@nestjs/swagger';
-import { SetExposureTimeParam, UpdateCamCfgParam } from './camera.param';
+import {
+  SetExposureTimeParam,
+  UndistortParam,
+  UpdateCamCfgParam,
+} from './camera.param';
 
 @Controller('camera')
 export class CameraController {
@@ -76,6 +80,19 @@ export class CameraController {
   grabStop(@Param('id') id: number) {
     try {
       return this.cameraService.grabStop(id);
+    } catch (error) {
+      return HttpResponse.err(error.message);
+    }
+  }
+
+  @Post('undistort')
+  @ApiOperation({
+    summary: '镜头畸变矫正',
+  })
+  public cameraUndistort(@Body() undistortParam: UndistortParam) {
+    try {
+      this.cameraService.undistort(undistortParam.undistortParams);
+      return HttpResponse.ok();
     } catch (error) {
       return HttpResponse.err(error.message);
     }
