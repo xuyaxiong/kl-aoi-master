@@ -23,7 +23,7 @@ export class FlawService {
         patternId: queryParam.patternId,
       });
     }
-    if (queryParam.imgIndex !== null || queryParam.imgIndex !== undefined) {
+    if (queryParam.imgIndex !== null && queryParam.imgIndex !== undefined) {
       queryBuilder.andWhere('flaw.imgIndex = :imgIndex', {
         imgIndex: queryParam.imgIndex,
       });
