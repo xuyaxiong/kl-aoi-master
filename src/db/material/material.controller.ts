@@ -17,7 +17,7 @@ import { PageRes } from './material.types';
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
 
-  @Get()
+  @Post()
   async findAll(
     @Body() queryParam: QueryParam,
   ): Promise<HttpResponse<PageRes<Material>>> {

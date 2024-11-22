@@ -31,15 +31,34 @@ export class MaterialService {
     }
     if (queryParam.startTime) {
       queryBuilder.andWhere('material.startTime > :start', {
-        start: queryParam.startTime[0],
+        start: new Date(queryParam.startTime[0]),
       });
       queryBuilder.andWhere('material.startTime < :end', {
-        end: queryParam.startTime[1],
+        end: new Date(queryParam.startTime[1]),
       });
+    }
+    if (queryParam.detectNG !== undefined && queryParam.detectNG !== null) {
+      queryBuilder.andWhere('material.detectNG = :detectNG', {
+        detectNG: `%${queryParam.detectNG}%`,
+      });
+    }
+    if (queryParam.affirmNG !== undefined && queryParam.affirmNG !== null) {
+      queryBuilder.andWhere('material.affirmNG = :affirmNG', {
+        affirmNG: `%${queryParam.affirmNG}%`,
+      });
+    }
+    if (queryParam.defectId !== undefined && queryParam.defectId !== null) {
+      queryBuilder
+        .where("CONCAT(',', material.detectResult, ',') LIKE :detectResult", {
+          detectResult: `%,${queryParam.defectId},%`,
+        })
+        .orWhere("CONCAT(',', material.affirmResult, ',') LIKE :affirmResult", {
+          affirmResult: `%,${queryParam.defectId},%`,
+        });
     }
     const skipNum = (queryParam.page - 1) * queryParam.pageSize;
     const [data, total] = await queryBuilder
-      .orderBy('material.startTime', 'DESC')
+      .orderBy('material.startTime', queryParam.sort)
       .skip(skipNum)
       .take(queryParam.pageSize)
       .getManyAndCount();
