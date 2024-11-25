@@ -91,4 +91,14 @@ export class PlcController {
       return HttpResponse.err();
     }
   }
+
+  @Get('takePhoto')
+  async takePhoto() {
+    try {
+      await this.plcService.takePhoto();
+      return HttpResponse.ok();
+    } catch (error) {
+      return HttpResponse.err();
+    }
+  }
 }

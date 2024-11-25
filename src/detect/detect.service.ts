@@ -33,6 +33,7 @@ import {
   MeasureRemoteCfg,
   RecipeBO,
   ReportPos,
+  Corrector,
 } from './bo';
 import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from '../db/recipe/recipe.service';
@@ -66,6 +67,7 @@ export class DetectService {
   private detectedCounter: DetectedCounter;
   private currImgCnt: number;
   private materialBO: MaterialBO;
+  private corrector: Corrector;
   private measureRemoteCfg: MeasureRemoteCfg;
   private anomalyRemoteCfg: AnomalyRemoteCfg;
   private detectStatus: DetectStatus = DetectStatus.DETECTING;
@@ -87,6 +89,7 @@ export class DetectService {
   public async start(startParam: StartParam) {
     const { sn, recipeId } = startParam;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
+    this.corrector = new Corrector();
     this.materialBO = await this.initMaterialBO(sn, recipeId);
     console.log(this.materialBO);
     this.detectInfoQueue = new DetectInfoQueue(
@@ -202,6 +205,8 @@ export class DetectService {
       const img1Ptr = imagePtr;
       // 1.4. 获取纠偏点位1坐标
       const pos1 = await this.getCurrPos();
+      this.corrector.setPos1(pos1);
+      this.corrector.setImg1(img1Ptr);
       // 1.5. 运动至纠偏点位2
       const locationR = this.materialBO.recipeBO.locationR;
       await this.moveToXY({
@@ -217,7 +222,10 @@ export class DetectService {
       const img2Ptr = imagePtr;
       // 2.3. 获取纠偏点位2坐标
       const pos2 = await this.getCurrPos();
+      this.corrector.setPos2(pos2);
+      this.corrector.setImg2(img2Ptr);
       // TODO 2.4. 调用纠偏接口
+      this.corrector.correct();
       const correctionXY = { x: 0, y: 0 };
       // 2.5. 执行纠偏运动
       await this.moveToXY(correctionXY);
