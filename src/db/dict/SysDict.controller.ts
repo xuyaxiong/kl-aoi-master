@@ -50,4 +50,9 @@ export class SysDictController {
       await this.sysDictService.getDictItemListByTypeCode(getDictItemListParam),
     );
   }
+
+  @Get('typeCode')
+  async getDictTypeList() {
+    return HttpResponse.ok(await this.sysDictService.getDictTypeList());
+  }
 }
