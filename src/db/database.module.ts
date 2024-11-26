@@ -8,6 +8,7 @@ import { PatternModule } from './pattern/pattern.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import AppConfig from '../app.config';
 
 @Global()
 @Module({
@@ -18,7 +19,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       port: 3306,
       username: 'root',
       password: '123456',
-      database: 'test-aoi',
+      database: AppConfig.dbName,
       timezone: '+08:00',
       logging: false,
       autoLoadEntities: true,

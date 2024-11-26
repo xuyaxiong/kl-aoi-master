@@ -14,5 +14,6 @@ const AppConfig = {
     host: 'http://127.0.0.1',
     port: 3200,
   },
+  dbName: 'aoi-led',
 };
 export default AppConfig;
