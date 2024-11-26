@@ -239,7 +239,9 @@ export class DetectService {
       await this.moveToXY(correctionXY);
       // 3. 切换到检测状态
       this.detectStatus = DetectStatus.DETECTING;
-      // 3.1. 下发拍照点位
+      // 3.1. 移动Z轴
+      await this.moveToZ(this.materialBO.recipeBO.motorZ);
+      // 3.2. 下发拍照点位
       const capPosList = transOrigDotListToCapPosList(
         this.materialBO.recipeBO.dotList,
         this.lensParams,
@@ -358,6 +360,21 @@ export class DetectService {
           dest: coor.y,
           isRelative: false,
         },
+      ],
+    };
+    await this.plcService.move(moveParam);
+  }
+
+  // 移动Z轴
+  private async moveToZ(z: number) {
+    const moveParam = {
+      axisInfoList: [
+        {
+          axisNum: 4,
+          speed: 10,
+          dest: z,
+          isRelative: false,
+        }
       ],
     };
     await this.plcService.move(moveParam);
