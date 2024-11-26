@@ -1,4 +1,3 @@
-import { CapPos } from '../../plc/plc.bo';
 import {
   DetectCfg,
   DetectType,
@@ -16,12 +15,6 @@ const mockConfig = {
   locationR: {
     motorCoor: [100, 100],
   },
-  lensParams: [
-    2560, 2560, -0.0005041561895677955, -2.624267773850234e-7,
-    9.475674094265883e-7, -6.506838968108795e-7, 0.0005042270233878636,
-    -2.6541447767978505e-7, -2.1965531138071474e-7, 1.8761998416316002e-7, 1, 0,
-    0,
-  ],
   mapParams: [
     -23.814633352512605, 0, 2324.8582496584995, 0, 23.804746876961232,
     -930.7080318438426, 0, 0, 1,
@@ -50,10 +43,7 @@ const mockConfig = {
     //   enableMeasure: false,
     // },
   ],
-  roiDotList: [
-    { x: 20, y: 20 },
-    { x: 30, y: 30 },
-  ],
+  roiDotList: [20, 20, 30, 30],
   chipMeasureX: [-1.5, 1.5],
   chipMeasureY: [-1.5, 1.5],
   chipMeasureR: [-1.5, 1.5],
@@ -66,11 +56,10 @@ export class RecipeBO {
   public readonly locationL: Location;
   public readonly locationR: Location;
   // 拍照点位坐标
-  public readonly dotList: CapPos[];
+  public readonly dotList: number[];
   public readonly totalDotNum: number;
   // 检测参数
   public readonly rectifyParams: RectifyParams;
-  public readonly lensParams: LensParams;
   public readonly mappingParams: MappingParams;
   // die行列数
   public readonly maxRow: number;
@@ -95,8 +84,8 @@ export class RecipeBO {
 
   private parse() {
     // TODO 从真实配置中解析数据
-    // const config = JSON.parse(this.config);
-    const config = mockConfig;
+    const config = JSON.parse(this.config);
+    // const config = mockConfig;
 
     const detectCfgSeq = this.patternCfgToDetectCfg(config.patterns);
 
@@ -104,16 +93,15 @@ export class RecipeBO {
     const locationR = config.locationR;
 
     const dotList = config.roiDotList;
-    const totalDotNum = dotList.length;
+    const totalDotNum = dotList.length / 2;
 
     const rectifyParams = config.rectifyParams;
-    const lensParams = config.lensParams;
     const mappingParams = config.mapParams;
 
     const maxRow = config.maxRow;
     const maxCol = config.maxCol;
 
-    const chipSize = config.chipSize;
+    const chipSize = config.chipList;
 
     const chipMeasureX = config.chipMeasureX;
     const chipMeasureY = config.chipMeasureY;
@@ -126,7 +114,6 @@ export class RecipeBO {
       dotList,
       totalDotNum,
       rectifyParams,
-      lensParams,
       mappingParams,
       maxRow,
       maxCol,

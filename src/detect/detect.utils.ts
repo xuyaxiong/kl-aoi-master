@@ -35,7 +35,8 @@ export function parseReportPos(posDataArr: number[]): ReportPos {
   return { idx, x, y };
 }
 
-export function byteArrToFloat(bytes: number[]): number {
+function byteArrToFloat(bytes: number[]): number {
+  bytes = bytes.reverse();
   const buffer = new Uint8Array(bytes).buffer;
   const view = new DataView(buffer);
   return view.getFloat32(0, false);
@@ -231,6 +232,38 @@ function parseImgName(imgName: string): CapPos {
   const x = parseFloat(res[1]);
   const y = parseFloat(res[3]);
   return { x, y };
+}
+
+function transformInvWorldCenter(
+  worldCoor: number[],
+  lensParams: LensParams,
+  rectifyParams: RectifyParams,
+) {
+  const worldCoorBuf = worldCoor.doubleToBuffer();
+  const lensParamsBuf = lensParams.doubleToBuffer();
+  const rectifyParamsBuf = rectifyParams.doubleToBuffer();
+  const motorPosBuf = Buffer.alloc(2 * 8);
+  const retVal = rectifyDll.transformInvWorldCenter(
+    1,
+    worldCoorBuf,
+    lensParamsBuf,
+    rectifyParamsBuf,
+    motorPosBuf,
+  );
+  assert.equal(retVal, 0, 'transformInvBiaxialCenter失败');
+  return motorPosBuf.toDoubleArr();
+}
+
+// 点位列表坐标转换
+export function transOrigDotListToCapPosList(
+  origDotList: number[],
+  lensParams: LensParams,
+  rectifyParams: RectifyParams,
+) {
+  return _.chunk(origDotList, 2).map((dotItem) => {
+    const newPos = transformInvWorldCenter(dotItem, lensParams, rectifyParams);
+    return { x: newPos[0], y: newPos[1] };
+  });
 }
 
 // 拼全图

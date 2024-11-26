@@ -49,9 +49,11 @@ import {
   filtrateMeasureDefect,
   objToFile,
   parseReportPos,
+  transOrigDotListToCapPosList,
 } from './detect.utils';
 import { MaterialService } from '../db/material/material.service';
 import AppConfig from '../app.config';
+import { SysDictService } from './../db/dict/SysDict.service';
 
 enum DetectStatus {
   IDLE,
@@ -72,6 +74,8 @@ export class DetectService {
   private anomalyRemoteCfg: AnomalyRemoteCfg;
   private detectStatus: DetectStatus = DetectStatus.IDLE;
 
+  private lensParams: LensParams;
+
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
@@ -80,6 +84,7 @@ export class DetectService {
     private readonly materialService: MaterialService,
     private readonly recipeService: RecipeService,
     private readonly flawService: FlawService,
+    private readonly sysDictService: SysDictService,
   ) {
     this.measureRemoteCfg = AppConfig.measureRemoteCfg;
     this.anomalyRemoteCfg = AppConfig.anomalyRemoteCfg;
@@ -90,8 +95,8 @@ export class DetectService {
     const { sn, recipeId } = startParam;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
     this.corrector = new Corrector();
+    this.lensParams = await this.getLensParams();
     this.materialBO = await this.initMaterialBO(sn, recipeId);
-    console.log(this.materialBO);
     this.detectInfoQueue = new DetectInfoQueue(
       this.materialBO.recipeBO.detectCfgSeq,
       this.materialBO.outputPath,
@@ -161,7 +166,7 @@ export class DetectService {
         await capMeasureDefectImgs(
           this.detectInfoQueue.imageInfoMap,
           measureDefectDataItemList,
-          this.materialBO.recipeBO.lensParams,
+          this.lensParams,
           this.materialBO.recipeBO.mappingParams,
           this.materialBO.recipeBO.rectifyParams,
           this.materialBO.recipeBO.chipSize,
@@ -235,8 +240,13 @@ export class DetectService {
       // 3. 切换到检测状态
       this.detectStatus = DetectStatus.DETECTING;
       // 3.1. 下发拍照点位
+      const capPosList = transOrigDotListToCapPosList(
+        this.materialBO.recipeBO.dotList,
+        this.lensParams,
+        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+      );
       await this.plcService.capPos({
-        capPosList: this.materialBO.recipeBO.dotList,
+        capPosList,
         sliceSize: 100,
       });
     } else if (this.detectStatus === DetectStatus.DETECTING) {
@@ -260,12 +270,12 @@ export class DetectService {
             cntPerLightType,
           } = detectInfo;
           const fno = imagePtr.frameId;
-          this.logger.log(
-            `\n点位: ${pointIdx}
-出图帧号：${fno}
-光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'} 数量: ${cntPerLightType}
-检测类型: ${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
-          );
+//           this.logger.log(
+//             `\n点位: ${pointIdx}
+// 出图帧号：${fno}
+// 光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'} 数量: ${cntPerLightType}
+// 检测类型: ${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
+//           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
             const { anomalyList, flawList } = await this.anomalyRemote(
@@ -309,12 +319,12 @@ export class DetectService {
   private setReportDataHandler() {
     this.plcService.setReportDataHandler(async (reportData: ReportData) => {
       const { modNum, insNum, data } = reportData;
-      console.log(reportData);
+      // console.log(reportData);
       // 处理数据上报
       if (modNum === 4 && insNum === 4) {
         // 拍摄点位坐标
         const reportPos = parseReportPos(data);
-        console.log(reportPos);
+        console.log('点位上报:', reportPos);
         this.detectInfoQueue.addPos(reportPos);
       } else if (modNum === 4 && insNum === 5) {
         const status = data[7];
@@ -452,5 +462,14 @@ export class DetectService {
       });
       await this.flawService.saveInBatch(flawEntityList);
     }
+  }
+
+  private async getLensParams() {
+    const dictItem = await this.sysDictService.getDictItemByCode({
+      typeCode: 'SYS_CAM_CFG',
+      code: 'lensParams',
+    });
+    if (dictItem) return JSON.parse(dictItem.value);
+    else return [];
   }
 }

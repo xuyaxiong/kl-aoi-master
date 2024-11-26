@@ -59,7 +59,7 @@ export class DetectInfoQueue {
       const imgName = `${imagePtr.frameId}_${pos.x}_${pos.y}.jpg`;
       const dir = path.join(this.outputPath, 'imgs', `${idx}.${lightName}`);
       const fullpath = saveImagePtr(imagePtr, dir, imgName);
-      console.log(`保存图片至: ${fullpath}`);
+      // console.log(`保存图片至: ${fullpath}`);
       const tmpDetectInfoList = [];
       for (const detectType of detectTypeList) {
         tmpDetectInfoList.push({
