@@ -17,6 +17,7 @@ export class MaterialBO {
     public readonly recipeBO: RecipeBO,
   ) {
     this.id = dayjs().format('YYYYMMDDHHmmss');
+    this.sn = this.id;
     this.startTime = new Date();
     const nowDate = dayjs(this.startTime).format('YYYYMMDD');
     this.outputPath = path.join(

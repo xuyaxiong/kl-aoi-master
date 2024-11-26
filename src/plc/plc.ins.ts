@@ -12,15 +12,15 @@ export class TakePhotoIns extends Ins {
   }
 
   protected getPayload(): number[] {
-    return [];
+    return [1, 2];
   }
 }
 
 @Timeout(1_000)
 export class CapPosIns extends SyncIns {
   public static readonly NAME = '下发拍照点位列表指令';
-  public static readonly MODULE_NUM = 4;
-  public static readonly NUM = 3;
+  public static readonly MOD_NUM = 4;
+  public static readonly INS_NUM = 3;
 
   private total: number;
   private startIdx: number;
@@ -43,6 +43,54 @@ export class CapPosIns extends SyncIns {
     }
     return payload;
   }
+  public parseRespData(data: number[] | Buffer): any {
+    return getPayloadFromResp(data);
+  }
+}
+
+export class SwitchModeIns extends Ins {
+  public static readonly NAME = '切换PLC手动/自动模式指令';
+  public static readonly MOD_NUM = 4;
+  public static readonly INS_NUM = 7;
+
+  constructor(private mode: number) {
+    super();
+  }
+
+  protected getPayload(): number[] {
+    return [0, this.mode];
+  }
+}
+
+@Timeout(50_000)
+export class InitPlcIns extends SyncIns {
+  public static readonly NAME = '初始化PLC指令';
+  public static readonly MOD_NUM = 4;
+  public static readonly INS_NUM = 8;
+
+  protected getPayload(): number[] {
+    const payload = [];
+    payload.push(this._sendNo);
+    return payload;
+  }
+
+  public parseRespData(data: number[] | Buffer): any {
+    return getPayloadFromResp(data);
+  }
+}
+
+@Timeout(50_000)
+export class StartPlcIns extends SyncIns {
+  public static readonly NAME = '启动PLC指令';
+  public static readonly MOD_NUM = 4;
+  public static readonly INS_NUM = 9;
+
+  protected getPayload(): number[] {
+    const payload = [];
+    payload.push(this._sendNo);
+    return payload;
+  }
+
   public parseRespData(data: number[] | Buffer): any {
     return getPayloadFromResp(data);
   }

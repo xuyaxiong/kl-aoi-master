@@ -18,4 +18,14 @@ export class DetectController {
       return HttpResponse.err(error.message);
     }
   }
+
+  @Get('stop')
+  @ApiOperation({ summary: '停止检测' })
+  public stop() {
+    try {
+      return HttpResponse.ok();
+    } catch (error) {
+      return HttpResponse.err(error.message);
+    }
+  }
 }

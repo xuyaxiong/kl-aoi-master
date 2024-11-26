@@ -20,7 +20,13 @@ import {
 } from './plc.param';
 import { ConfigService } from '@nestjs/config';
 import { CapPos, PlcTcpConfig } from './plc.bo';
-import { CapPosIns, TakePhotoIns } from './plc.ins';
+import {
+  CapPosIns,
+  InitPlcIns,
+  StartPlcIns,
+  SwitchModeIns,
+  TakePhotoIns,
+} from './plc.ins';
 
 @Injectable()
 export class PlcService {
@@ -78,6 +84,21 @@ export class PlcService {
   public async takePhoto() {
     const takePhotoIns = new TakePhotoIns();
     await this.client.sendIns(takePhotoIns);
+  }
+
+  public async initPlc() {
+    const ins = new InitPlcIns();
+    await this.client.sendIns(ins);
+  }
+
+  public async startPlc() {
+    const ins = new StartPlcIns();
+    await this.client.sendIns(ins);
+  }
+
+  public async switchMode(mode: number) {
+    const ins = new SwitchModeIns(mode);
+    await this.client.sendIns(ins);
   }
 
   private async _capPos(total: number, startIdx: number, capPosList: CapPos[]) {

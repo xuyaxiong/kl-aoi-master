@@ -92,10 +92,40 @@ export class PlcController {
     }
   }
 
+  @Get('initPlc')
+  async initPlc() {
+    try {
+      await this.plcService.initPlc();
+      return HttpResponse.ok();
+    } catch (error) {
+      return HttpResponse.err();
+    }
+  }
+
+  @Get('startPlc')
+  async startPlc() {
+    try {
+      await this.plcService.startPlc();
+      return HttpResponse.ok();
+    } catch (error) {
+      return HttpResponse.err();
+    }
+  }
+
   @Get('takePhoto')
   async takePhoto() {
     try {
       await this.plcService.takePhoto();
+      return HttpResponse.ok();
+    } catch (error) {
+      return HttpResponse.err();
+    }
+  }
+
+  @Get('switchMode/:mode')
+  async switchMode(@Param('mode') mode: number) {
+    try {
+      await this.plcService.switchMode(mode);
       return HttpResponse.ok();
     } catch (error) {
       return HttpResponse.err();

@@ -70,7 +70,7 @@ export class DetectService {
   private corrector: Corrector;
   private measureRemoteCfg: MeasureRemoteCfg;
   private anomalyRemoteCfg: AnomalyRemoteCfg;
-  private detectStatus: DetectStatus = DetectStatus.DETECTING;
+  private detectStatus: DetectStatus = DetectStatus.IDLE;
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -172,12 +172,15 @@ export class DetectService {
         this.materialService.create(this.materialBO.mapToMaterial());
       },
     );
-    // this.eventEmitter.emit(`startCorrection`);
-    mockImgSeqGenerator(
-      this.eventEmitter,
-      this.detectedCounter.detectCount.totalImgCnt,
-      300,
-    );
+
+    await this.plcService.initPlc();
+    await this.plcService.startPlc();
+
+    // mockImgSeqGenerator(
+    //   this.eventEmitter,
+    //   this.detectedCounter.detectCount.totalImgCnt,
+    //   300,
+    // );
   }
 
   @OnEvent('startCorrection')
@@ -313,6 +316,12 @@ export class DetectService {
         const reportPos = parseReportPos(data);
         console.log(reportPos);
         this.detectInfoQueue.addPos(reportPos);
+      } else if (modNum === 4 && insNum === 5) {
+        const status = data[7];
+        if (status === 2) {
+          console.log('receive start signal');
+          this.eventEmitter.emit(`startCorrection`);
+        }
       }
     });
   }
