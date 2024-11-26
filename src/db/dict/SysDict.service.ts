@@ -22,7 +22,7 @@ export class SysDictService {
     private readonly sysDictItemRepository: Repository<SysDictItem>,
   ) {}
 
-  async findAll(): Promise<SysDictType[]> {
+  async getDictTypeList(): Promise<SysDictType[]> {
     return await this.sysDictTypeRepository.find();
   }
 
