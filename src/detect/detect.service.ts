@@ -46,7 +46,9 @@ import {
   deDupMeasureDataList,
   exportAnomalyDataList,
   exportMeasureDataList,
+  exportMergedDataList,
   filtrateMeasureDefect,
+  mergeAnomalyAndMeasureData,
   objToFile,
   parseReportPos,
   transOrigDotListToCapPosList,
@@ -146,6 +148,19 @@ export class DetectService {
           'anomaly.csv',
           this.materialBO.dataOutputPath,
           dedupAnomalyDataList,
+        );
+
+        // TODO 合并外观结果和测量结果 chipNum当前使用固定值
+        const mergedDataList = mergeAnomalyAndMeasureData(
+          this.materialBO.recipeBO.maxRow,
+          this.materialBO.recipeBO.maxCol,
+          3,
+          dedupAnomalyDataList,
+          dedupMeasureDataList,
+        );
+        exportMergedDataList(
+          this.materialBO.dataOutputPath,
+          mergedDataList,
         );
 
         // 截取外观缺陷小图

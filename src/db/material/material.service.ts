@@ -147,6 +147,7 @@ export class MaterialService {
     for await (const line of rl) {
       lines.push(line);
     }
+    lines.slice(1);
     return lines;
   }
 }

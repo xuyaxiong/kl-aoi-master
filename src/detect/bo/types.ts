@@ -126,3 +126,16 @@ export interface DetectNumCount {
   totalAnomalyCnt: number;
   totalMeasureCnt: number;
 }
+
+export interface ChipDetectInfo {
+  types: string;
+  dx: number;
+  dy: number;
+  dr: number;
+}
+
+export interface MergedDetectData {
+  R: number;
+  C: number;
+  chipList: ChipDetectInfo[];
+}

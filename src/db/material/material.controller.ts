@@ -52,8 +52,8 @@ export class MaterialController {
   }
 
   // 获取缺陷结果文件列表
-  @Get('getMapCsvList/:materialId')
-  async getMapCsvList(@Param('materialId') materialId: string) {
+  @Get('getMapCsvList/:id')
+  async getMapCsvList(@Param('id') materialId: string) {
     try {
       const data = await this.materialService.getMapCsvList(materialId);
       return HttpResponse.ok(data);

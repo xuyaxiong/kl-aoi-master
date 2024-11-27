@@ -10,6 +10,7 @@ import {
   AnomalyDefectCapInfo,
   ImageInfo,
   MeasureDataItem,
+  MergedDetectData,
   ReportPos,
 } from './bo';
 import { cropImg, loadImageAsync, saveImage } from '../utils/image_utils';
@@ -332,4 +333,76 @@ export async function saveFullImg(
   assert.equal(res4, 0, '调用freeMosaic失败');
   console.log(`拼图完成: ${outputPath}`);
   return outputPath;
+}
+
+export function mergeAnomalyAndMeasureData(
+  maxRow: number,
+  maxCol: number,
+  chipNum: number,
+  anomalyDataList: AnomalyDataItem[],
+  measureDataList: MeasureDataItem[],
+): MergedDetectData[] {
+  let grid = [];
+  for (let r = 0; r < maxRow; ++r) {
+    const row = [];
+    for (let c = 0; c < maxCol; ++c) {
+      row.push({ R: r, C: c, chipList: [] });
+      for (let id = 0; id < chipNum; ++id) {
+        row[c].chipList.push({ types: '', dx: 0, dy: 0, dr: 0 });
+      }
+    }
+    grid.push(row);
+  }
+
+  for (let anomalyData of anomalyDataList) {
+    const { R, C, chipId, types } = anomalyData;
+    grid[R][C].chipList[chipId].types = types;
+  }
+  for (let measureData of measureDataList) {
+    const [fno, R, C, chipId, dx, dy, dr] = measureData;
+    grid[R][C].chipList[chipId].dx = dx;
+    grid[R][C].chipList[chipId].dy = dy;
+    grid[R][C].chipList[chipId].dr = dr;
+  }
+
+  grid = grid.flat();
+  return grid;
+}
+
+export function exportMergedDataList(
+  dir: string,
+  mergedDataList: MergedDetectData[],
+  limit: number = 200_000,
+) {
+  const header = 'R,C,ID,types,dx,dy,dr\n';
+  let rows: string[] = [header];
+  let count = 0;
+  let fileIndex = 0;
+
+  const writeToFile = () => {
+    if (rows.length > 1) {
+      // 如果有数据需要写入
+      const fullPath = path.join(dir, `output_${fileIndex}.csv`);
+      console.log('导出合并数据:', fullPath);
+      fs.writeFileSync(fullPath, rows.join(''));
+      rows = [header]; // 重置行数据，保留表头
+      fileIndex++;
+    }
+  };
+
+  for (const mergedData of mergedDataList) {
+    const { R, C, chipList } = mergedData;
+    for (const [idx, chip] of chipList.entries()) {
+      rows.push(
+        `${R},${C},${idx},${chip.types},${chip.dx},${chip.dy},${chip.dr}\n`,
+      );
+      count++;
+      if (count >= limit) {
+        writeToFile();
+        count = 0;
+      }
+    }
+  }
+
+  writeToFile(); // 写入最后的剩余数据
 }
