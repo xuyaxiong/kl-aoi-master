@@ -150,18 +150,15 @@ export class DetectService {
           dedupAnomalyDataList,
         );
 
-        // TODO 合并外观结果和测量结果 chipNum当前使用固定值
+        // TODO 合并外观结果和测量结果
         const mergedDataList = mergeAnomalyAndMeasureData(
           this.materialBO.recipeBO.maxRow,
           this.materialBO.recipeBO.maxCol,
-          3,
+          this.materialBO.recipeBO.chipNum,
           dedupAnomalyDataList,
           dedupMeasureDataList,
         );
-        exportMergedDataList(
-          this.materialBO.dataOutputPath,
-          mergedDataList,
-        );
+        exportMergedDataList(this.materialBO.dataOutputPath, mergedDataList);
 
         // 截取外观缺陷小图
         await capAnomalyDefectImgs(

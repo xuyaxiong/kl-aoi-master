@@ -7,8 +7,11 @@ import {
 } from './types';
 
 const mockConfig = {
-  maxRow: 715,
-  maxCol: 715,
+  designValue: {
+    maxRow: 715,
+    maxCol: 715,
+    chipNum: 3,
+  },
   motorZ: 70,
   detectExposureTime: 15_000,
   locationL: {
@@ -67,9 +70,10 @@ export class RecipeBO {
   // 检测参数
   public readonly rectifyParams: RectifyParams;
   public readonly mappingParams: MappingParams;
-  // die行列数
+  // 物料信息
   public readonly maxRow: number;
   public readonly maxCol: number;
+  public readonly chipNum: number;
   // die中chip大小及位置
   public readonly chipSize: number[];
   // 测量值宽容范围
@@ -108,8 +112,9 @@ export class RecipeBO {
     const rectifyParams = config.rectifyParams;
     const mappingParams = config.mapParams;
 
-    const maxRow = config.maxRow;
-    const maxCol = config.maxCol;
+    const maxRow = config.designValue.maxRow;
+    const maxCol = config.designValue.maxCol;
+    const chipNum = config.designValue.chipNum;
 
     const chipSize = config.chipList;
 
@@ -129,6 +134,7 @@ export class RecipeBO {
       mappingParams,
       maxRow,
       maxCol,
+      chipNum,
       chipSize,
       chipMeasureX,
       chipMeasureY,
