@@ -192,13 +192,20 @@ export class DetectService {
   private async correctionTrigger() {
     // 1. 切换到纠偏1状态
     this.detectStatus = DetectStatus.CORRECTION_ONE;
-    // 1.1. 运动至纠偏点位1
+    // 1.1 调整曝光值
+    this.cameraService.setExposureTime(
+      0,
+      this.materialBO.recipeBO.detectExposureTime,
+    );
+    // 1.2. 移动Z轴
+    await this.moveToZ(this.materialBO.recipeBO.motorZ);
+    // 1.3. 运动至纠偏点位1
     const locationL = this.materialBO.recipeBO.locationL;
     await this.moveToXY({
       x: locationL.motorCoor[0],
       y: locationL.motorCoor[1],
     });
-    // 1.2. 触发拍照
+    // 1.4. 触发拍照
     await this.plcService.takePhoto();
   }
 
@@ -209,13 +216,13 @@ export class DetectService {
   @OnEvent('camera.grabbed')
   async grabbed(imagePtr: ImagePtr, reportPos?: ReportPos) {
     if (this.detectStatus === DetectStatus.CORRECTION_ONE) {
-      // 1.3. 获取纠偏点位1图片
+      // 1.5. 获取纠偏点位1图片
       const img1Ptr = imagePtr;
-      // 1.4. 获取纠偏点位1坐标
+      // 1.6. 获取纠偏点位1坐标
       const pos1 = await this.getCurrPos();
       this.corrector.setPos1(pos1);
       this.corrector.setImg1(img1Ptr);
-      // 1.5. 运动至纠偏点位2
+      // 1.7. 运动至纠偏点位2
       const locationR = this.materialBO.recipeBO.locationR;
       await this.moveToXY({
         x: locationR.motorCoor[0],
@@ -239,9 +246,7 @@ export class DetectService {
       await this.moveToXY(correctionXY);
       // 3. 切换到检测状态
       this.detectStatus = DetectStatus.DETECTING;
-      // 3.1. 移动Z轴
-      await this.moveToZ(this.materialBO.recipeBO.motorZ);
-      // 3.2. 下发拍照点位
+      // 3.1. 下发拍照点位
       const capPosList = transOrigDotListToCapPosList(
         this.materialBO.recipeBO.dotList,
         this.lensParams,
@@ -272,12 +277,12 @@ export class DetectService {
             cntPerLightType,
           } = detectInfo;
           const fno = imagePtr.frameId;
-//           this.logger.log(
-//             `\n点位: ${pointIdx}
-// 出图帧号：${fno}
-// 光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'} 数量: ${cntPerLightType}
-// 检测类型: ${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
-//           );
+          //           this.logger.log(
+          //             `\n点位: ${pointIdx}
+          // 出图帧号：${fno}
+          // 光源类型: ${lightType === LightType.COAXIAL ? '同轴' : '环光'} 数量: ${cntPerLightType}
+          // 检测类型: ${detectType === DetectType.ANOMALY ? '外观' : '测量'}`,
+          //           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
             const { anomalyList, flawList } = await this.anomalyRemote(
@@ -371,10 +376,10 @@ export class DetectService {
       axisInfoList: [
         {
           axisNum: 4,
-          speed: 10,
+          speed: 30,
           dest: z,
           isRelative: false,
-        }
+        },
       ],
     };
     await this.plcService.move(moveParam);

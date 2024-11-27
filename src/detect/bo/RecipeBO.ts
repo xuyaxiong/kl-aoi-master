@@ -10,6 +10,7 @@ const mockConfig = {
   maxRow: 715,
   maxCol: 715,
   motorZ: 70,
+  detectExposureTime: 15_000,
   locationL: {
     motorCoor: [50, 50],
   },
@@ -55,6 +56,8 @@ export class RecipeBO {
   public readonly detectCfgSeq: DetectCfg[];
   // Z轴对焦位置
   public readonly motorZ: number;
+  // 检测曝光值
+  public readonly detectExposureTime: number;
   // 纠偏定位点
   public readonly locationL: Location;
   public readonly locationR: Location;
@@ -94,6 +97,8 @@ export class RecipeBO {
 
     const motorZ = config.motorZ;
 
+    const detectExposureTime = config.detectExposureTime;
+
     const locationL = config.locationL;
     const locationR = config.locationR;
 
@@ -115,6 +120,7 @@ export class RecipeBO {
     return {
       detectCfgSeq,
       motorZ,
+      detectExposureTime,
       locationL,
       locationR,
       dotList,
