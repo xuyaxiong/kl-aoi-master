@@ -70,6 +70,7 @@ export class DetectInfoQueue {
           detectType,
           patternId,
           cntPerLightType: this.imgCntPerLightType.get(lightType),
+          imgPath: fullpath,
         });
       }
       return tmpDetectInfoList;

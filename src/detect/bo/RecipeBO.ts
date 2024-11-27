@@ -10,7 +10,7 @@ const mockConfig = {
   designValue: {
     maxRow: 715,
     maxCol: 715,
-    chipNum: 3,
+    chipNum: 1,
   },
   motorZ: 70,
   detectExposureTime: 15_000,
@@ -52,6 +52,12 @@ const mockConfig = {
   chipMeasureX: [-1.5, 1.5],
   chipMeasureY: [-1.5, 1.5],
   chipMeasureR: [-1.5, 1.5],
+  roiCornerMotor: [
+    97.62309649051184, 39.097581530875374, 67.59953956054554, 69.13360770067247,
+    -0.0031858581209718295, 0.006539127039388859,
+  ],
+  measureChipModelFile:
+    'C:\\Users\\xuyax\\Desktop\\test_measure_data\\chip2.ncc;',
 };
 
 export class RecipeBO {
@@ -81,6 +87,9 @@ export class RecipeBO {
   public readonly chipMeasureY: number[];
   public readonly chipMeasureR: number[];
 
+  public readonly roiCornerPoint: number[];
+  public readonly measureChipModelFile: string;
+
   constructor(
     public readonly id: number,
     public readonly name: string,
@@ -94,8 +103,8 @@ export class RecipeBO {
 
   private parse() {
     // TODO 从真实配置中解析数据
-    const config = JSON.parse(this.config);
-    // const config = mockConfig;
+    // const config = JSON.parse(this.config);
+    const config = mockConfig;
 
     const detectCfgSeq = this.patternCfgToDetectCfg(config.patterns);
 
@@ -122,6 +131,9 @@ export class RecipeBO {
     const chipMeasureY = config.chipMeasureY;
     const chipMeasureR = config.chipMeasureR;
 
+    const roiCornerPoint = config.roiCornerMotor;
+    const measureChipModelFile = config.measureChipModelFile;
+
     return {
       detectCfgSeq,
       motorZ,
@@ -139,6 +151,8 @@ export class RecipeBO {
       chipMeasureX,
       chipMeasureY,
       chipMeasureR,
+      roiCornerPoint,
+      measureChipModelFile,
     };
   }
 

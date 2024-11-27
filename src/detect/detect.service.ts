@@ -74,9 +74,14 @@ export class DetectService {
   private corrector: Corrector;
   private measureRemoteCfg: MeasureRemoteCfg;
   private anomalyRemoteCfg: AnomalyRemoteCfg;
-  private detectStatus: DetectStatus = DetectStatus.IDLE;
+  private detectStatus: DetectStatus = DetectStatus.DETECTING;
+
+  private width: number;
+  private height: number;
+  private channel: number;
 
   private lensParams: LensParams;
+  private rectifyParams: RectifyParams = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
@@ -90,6 +95,9 @@ export class DetectService {
   ) {
     this.measureRemoteCfg = AppConfig.measureRemoteCfg;
     this.anomalyRemoteCfg = AppConfig.anomalyRemoteCfg;
+    this.width = this.configService.get<number>('width');
+    this.height = this.configService.get<number>('height');
+    this.channel = this.configService.get<number>('channel');
     this.setReportDataHandler();
   }
 
@@ -287,6 +295,7 @@ export class DetectService {
             detectType,
             patternId,
             cntPerLightType,
+            imgPath,
           } = detectInfo;
           const fno = imagePtr.frameId;
           //           this.logger.log(
@@ -323,7 +332,30 @@ export class DetectService {
             this.detectedCounter.plusAnomalyCnt();
           } else if (detectType === DetectType.MEASURE) {
             // 送测量
-            const measureRes = await this.measureRemote(fno, null);
+            const measureParam: MeasureParam = {
+              fno,
+              imagePath: imgPath, // 此时图片可能未保存
+              imageSize: {
+                width: this.width,
+                height: this.height,
+                channel: this.channel,
+              },
+              pos: [pos.x, pos.y],
+              lensParams: this.lensParams,
+              mappingParams: this.materialBO.recipeBO.mappingParams,
+              rectifyParams: this.rectifyParams,
+              modelPath: this.materialBO.recipeBO.measureChipModelFile,
+              chipNum: this.materialBO.recipeBO.chipNum,
+              chipSize: this.materialBO.recipeBO.chipSize,
+              roiCornerPoint: this.materialBO.recipeBO.roiCornerPoint,
+              detectRegionSize: [
+                this.materialBO.recipeBO.maxRow,
+                this.materialBO.recipeBO.maxCol,
+              ],
+              measureThreshold: 0.7,
+              postProcess: false,
+            };
+            const measureRes = await this.measureRemote(fno, measureParam);
             this.measureRawList.push(...measureRes);
             this.detectedCounter.plusMeasureCnt();
           }
@@ -438,13 +470,13 @@ export class DetectService {
   public async measureRemote(fno: number, measureParam: MeasureParam) {
     const measureUrl = `${this.measureRemoteCfg.host}:${this.measureRemoteCfg.port}/measure/measure`;
     try {
-      const param = mockMeasureParam(fno);
+      // const param = mockMeasureParam(fno);
       objToFile(
-        param,
+        measureParam,
         path.join(this.materialBO.detectParamPath, 'measureParams'),
-        `${param.fno}.json`,
+        `${fno}.json`,
       );
-      const res = await axios.post(measureUrl, param); // TODO mock请求参数
+      const res = await axios.post(measureUrl, measureParam);
       const data = res.data.data;
       return data;
     } catch (error) {

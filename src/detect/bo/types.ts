@@ -30,6 +30,7 @@ export interface DetectInfo {
   detectType: DetectType;
   patternId: number;
   cntPerLightType: number;
+  imgPath: string;
 }
 
 export interface DetectCfg {
