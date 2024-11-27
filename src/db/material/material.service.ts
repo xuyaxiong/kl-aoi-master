@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Like, Repository } from 'typeorm';
+const path = require('path');
+const fs = require('fs');
+const readline = require('readline');
 import { Material } from './material.entity';
 import { QueryParam } from './material.param';
 import { PageRes } from './material.types';
@@ -73,7 +76,7 @@ export class MaterialService {
     };
   }
 
-  async findOne(id: string): Promise<Material> {
+  async findById(id: string): Promise<Material> {
     return this.materialRepository.findOneBy({ id });
   }
 
@@ -87,10 +90,63 @@ export class MaterialService {
     updateMaterial: Partial<Material>,
   ): Promise<Material> {
     await this.materialRepository.update(id, updateMaterial);
-    return this.findOne(id);
+    return this.findById(id);
   }
 
   async delete(id: number): Promise<void> {
     await this.materialRepository.delete(id);
+  }
+
+  public async getMapCsvList(materialId: string) {
+    const material = await this.findById(materialId);
+    const dataOutputPath = material.dataOutputPath;
+    const rectifyParams = material.rectifyParams;
+    const filePathList = this.getOutputFilePathList(dataOutputPath);
+    return {
+      rectifyParams: JSON.parse(rectifyParams),
+      csvList: filePathList,
+    };
+  }
+
+  public async getMapCsvResult(filePath: string) {
+    const lines = await this.loadSingleOrigData(filePath);
+    const rows = [];
+    for (const line of lines) {
+      const [C, R, chipId, types, dx, dy, dr] = line.split(',');
+      rows.push({
+        R: parseInt(R),
+        C: parseInt(C),
+        types,
+        LED: parseInt(chipId),
+        dx: parseFloat(dx),
+        dy: parseFloat(dy),
+        dr: parseFloat(dr),
+      });
+    }
+    return rows;
+  }
+
+  private getOutputFilePathList(dataOutputPath: string) {
+    return fs
+      .readdirSync(dataOutputPath)
+      .filter((fileName: string) => {
+        return fileName.includes('output');
+      })
+      .sort()
+      .map((fileName: string) => path.join(dataOutputPath, fileName));
+  }
+
+  private async loadSingleOrigData(filePath: string) {
+    const lines = [];
+    const fileStream = fs.createReadStream(filePath);
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity,
+    });
+
+    for await (const line of rl) {
+      lines.push(line);
+    }
+    return lines;
   }
 }

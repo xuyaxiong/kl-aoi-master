@@ -10,3 +10,7 @@ export interface QueryParam {
   pageSize: number;
   sort: 'ASC' | 'DESC';
 }
+
+export class GetMapCsvResultParam {
+  csv: string;
+}
