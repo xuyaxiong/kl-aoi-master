@@ -61,6 +61,7 @@ const mockConfig = {
     -0.0031858581209718295, 0.006539127039388859,
   ],
   measureChipModelFile: 'chip2.ncc;',
+  mapImgPath: 'map.png',
 };
 
 export class RecipeBO {
@@ -86,6 +87,8 @@ export class RecipeBO {
   public readonly chipNum: number;
   // die中chip大小及位置
   public readonly chipSize: number[];
+  // 检测屏蔽区
+  public readonly shildImgPath: string;
   // 测量值宽容范围
   public readonly chipMeasureX: number[];
   public readonly chipMeasureY: number[];
@@ -133,6 +136,8 @@ export class RecipeBO {
 
     const chipSize = config.chipList;
 
+    const shildImgPath = path.join(this.recipePath, config.mapImgPath);
+
     const chipMeasureX = config.chipMeasureX;
     const chipMeasureY = config.chipMeasureY;
     const chipMeasureR = config.chipMeasureR;
@@ -159,6 +164,7 @@ export class RecipeBO {
       maxCol,
       chipNum,
       chipSize,
+      shildImgPath,
       chipMeasureX,
       chipMeasureY,
       chipMeasureR,

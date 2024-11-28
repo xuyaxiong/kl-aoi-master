@@ -338,7 +338,7 @@ export class DetectService {
               ),
               maskSavePath: maskPath,
               shildInfo: {
-                path: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\37.20241016_test1\\37.20241016_test1\\map.png',
+                path: this.materialBO.recipeBO.shildImgPath,
                 col: this.materialBO.recipeBO.maxCol,
                 row: this.materialBO.recipeBO.maxRow,
               },
