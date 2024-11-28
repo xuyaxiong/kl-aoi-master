@@ -9,6 +9,7 @@ import {
   ReportPos,
 } from './types';
 import { saveImagePtrSync } from '../../utils/image_utils';
+import Utils from '../../utils/Utils';
 
 export class DetectInfoQueue {
   private imgCnt = 0;
@@ -60,6 +61,9 @@ export class DetectInfoQueue {
       // 缓存图片指针，数据合并完成后截取缺陷小图用
       this.imageInfoMap.set(imagePtr.frameId, { imagePtr, reportPos: pos });
       const imgName = `${imagePtr.frameId}_${pos.x}_${pos.y}.jpg`;
+      let maskPath = path.join(this.outputPath, 'imgs', 'mask');
+      Utils.ensurePathSync(maskPath);
+      maskPath = path.join(maskPath, imgName);
       const dir = path.join(this.outputPath, 'imgs', `${idx}.${lightName}`);
       const fullpath = saveImagePtrSync(imagePtr, dir, imgName);
       // console.log(`保存图片至: ${fullpath}`);
@@ -74,6 +78,7 @@ export class DetectInfoQueue {
           patternId,
           cntPerLightType: this.imgCntPerLightType.get(lightType),
           imgPath: fullpath,
+          maskPath,
           ignores,
           anomalyThreshold,
           modelFile,

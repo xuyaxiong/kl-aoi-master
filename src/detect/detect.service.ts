@@ -65,6 +65,8 @@ enum DetectStatus {
   DETECTING,
 }
 
+const MOCK_OPEN = true;
+
 @Injectable()
 export class DetectService {
   private readonly logger = new Logger(DetectService.name);
@@ -201,14 +203,16 @@ export class DetectService {
       },
     );
 
-    await this.plcService.initPlc();
-    await this.plcService.startPlc();
-
-    // mockImgSeqGenerator(
-    //   this.eventEmitter,
-    //   this.detectedCounter.detectCount.totalImgCnt,
-    //   300,
-    // );
+    if (MOCK_OPEN) {
+      mockImgSeqGenerator(
+        this.eventEmitter,
+        this.detectedCounter.detectCount.totalImgCnt,
+        300,
+      );
+    } else {
+      await this.plcService.initPlc();
+      await this.plcService.startPlc();
+    }
   }
 
   @OnEvent('startCorrection')
@@ -299,6 +303,7 @@ export class DetectService {
             patternId,
             cntPerLightType,
             imgPath,
+            maskPath,
             ignores,
             anomalyThreshold,
             modelFile,
@@ -331,10 +336,7 @@ export class DetectService {
                 AppConfig.TMP_DIR,
                 `${Utils.genRandomStr(5)}.jpg`,
               ),
-              maskSavePath: path.join(
-                AppConfig.TMP_DIR,
-                `${Utils.genRandomStr(5)}.jpg`,
-              ),
+              maskSavePath: maskPath,
               shildInfo: {
                 path: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\37.20241016_test1\\37.20241016_test1\\map.png',
                 col: this.materialBO.recipeBO.maxCol,
