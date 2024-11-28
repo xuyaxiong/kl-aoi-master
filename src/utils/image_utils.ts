@@ -44,13 +44,13 @@ export function loadImagePtr(
   return imagePtr;
 }
 
-export function saveImagePtr(
+export function saveImagePtrSync(
   imagePtr: ImagePtr,
   dir: string,
   name: string,
 ): string {
   const { buffer } = new KLBuffer(imagePtr.bufferPtr[1], imagePtr.bufferPtr[0]);
-  return saveImage(
+  return saveImageSync(
     {
       buffer,
       width: imagePtr.width,
@@ -65,7 +65,12 @@ export function saveImagePtr(
 export function saveTmpImagePtr(imagePtr: ImagePtr, dir: string = null) {
   const tmpDir = dir || path.join(os.tmpdir(), 'koalaTmp');
   const imgName = `tmp-${Utils.genRandomStr(10)}.jpg`;
-  return saveImagePtr(imagePtr, tmpDir, imgName);
+  return saveImagePtrSync(imagePtr, tmpDir, imgName);
+}
+
+export function saveImageSync(image: Image, dir: string, name: string): string {
+  const { buffer, width, height, channel } = image;
+  return _saveImageSync(buffer, width, height, channel, dir, name);
 }
 
 export function saveImage(image: Image, dir: string, name: string): string {
@@ -78,6 +83,20 @@ export function saveTmpImage(image: Image, dir: string = null) {
   const imgName = `tmp-${dayjs().format('YYYYMMDDHHmmssSSS')}.png`;
   saveImage(image, tmpDir, imgName);
   return path.join(tmpDir, imgName);
+}
+
+function _saveImageSync(
+  buffer: Buffer,
+  width: number,
+  height: number,
+  channel: number,
+  dir: string,
+  name: string,
+): string {
+  const fullPath = path.join(dir, name);
+  Utils.ensurePathSync(dir);
+  shmemDll.imwrite(fullPath, buffer, width, height, channel, true);
+  return fullPath;
 }
 
 function _saveImage(

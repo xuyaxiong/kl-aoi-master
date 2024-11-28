@@ -8,7 +8,7 @@ import {
   LightType,
   ReportPos,
 } from './types';
-import { saveImagePtr } from '../../utils/image_utils';
+import { saveImagePtrSync } from '../../utils/image_utils';
 
 export class DetectInfoQueue {
   private imgCnt = 0;
@@ -58,7 +58,7 @@ export class DetectInfoQueue {
       this.imageInfoMap.set(imagePtr.frameId, { imagePtr, reportPos: pos });
       const imgName = `${imagePtr.frameId}_${pos.x}_${pos.y}.jpg`;
       const dir = path.join(this.outputPath, 'imgs', `${idx}.${lightName}`);
-      const fullpath = saveImagePtr(imagePtr, dir, imgName);
+      const fullpath = saveImagePtrSync(imagePtr, dir, imgName);
       // console.log(`保存图片至: ${fullpath}`);
       const tmpDetectInfoList = [];
       for (const detectType of detectTypeList) {

@@ -76,6 +76,7 @@ export class DetectService {
   private anomalyRemoteCfg: AnomalyRemoteCfg;
   private detectStatus: DetectStatus = DetectStatus.DETECTING;
 
+  private baseRecipePath: string;
   private width: number;
   private height: number;
   private channel: number;
@@ -98,6 +99,7 @@ export class DetectService {
     this.width = this.configService.get<number>('width');
     this.height = this.configService.get<number>('height');
     this.channel = this.configService.get<number>('channel');
+    this.baseRecipePath = this.configService.get<string>('recipePath');
     this.setReportDataHandler();
   }
 
@@ -334,7 +336,7 @@ export class DetectService {
             // 送测量
             const measureParam: MeasureParam = {
               fno,
-              imagePath: imgPath, // 此时图片可能未保存
+              imagePath: imgPath,
               imageSize: {
                 width: this.width,
                 height: this.height,
@@ -352,7 +354,7 @@ export class DetectService {
                 this.materialBO.recipeBO.maxRow,
                 this.materialBO.recipeBO.maxCol,
               ],
-              measureThreshold: 0.7,
+              measureThreshold: 0.7, // TODO
               postProcess: false,
             };
             const measureRes = await this.measureRemote(fno, measureParam);
@@ -389,7 +391,12 @@ export class DetectService {
 
   private async initMaterialBO(sn: string, recipeId: number) {
     const recipe = await this.recipeService.findById(recipeId);
-    const recipeBO = new RecipeBO(recipeId, recipe.name, recipe.config);
+    const recipeBO = new RecipeBO(
+      recipeId,
+      recipe.name,
+      this.baseRecipePath,
+      recipe.config,
+    );
     return new MaterialBO(sn, recipeBO);
   }
 
