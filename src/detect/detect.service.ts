@@ -56,6 +56,7 @@ import {
 import { MaterialService } from '../db/material/material.service';
 import AppConfig from '../app.config';
 import { SysDictService } from './../db/dict/SysDict.service';
+import Utils from 'src/utils/Utils';
 
 enum DetectStatus {
   IDLE,
@@ -298,6 +299,9 @@ export class DetectService {
             patternId,
             cntPerLightType,
             imgPath,
+            ignores,
+            anomalyThreshold,
+            modelFile,
           } = detectInfo;
           const fno = imagePtr.frameId;
           //           this.logger.log(
@@ -308,9 +312,38 @@ export class DetectService {
           //           );
           if (detectType === DetectType.ANOMALY) {
             // 送外观检测
+            const anomalyParam: AnomalyParam = {
+              fno,
+              imagePath: imgPath,
+              dbName: modelFile,
+              flawCount: 300,
+              anomalyThreshold,
+              ignores,
+              isFirst: false,
+              pos: [pos.x, pos.y],
+              lensParams: this.lensParams,
+              mappingParams: this.materialBO.recipeBO.mappingParams,
+              rectifyParams: this.rectifyParams,
+              chipNum: this.materialBO.recipeBO.chipNum,
+              chipSize: this.materialBO.recipeBO.chipSize,
+              roiCornerPoint: this.materialBO.recipeBO.roiCornerPoint,
+              imageSavePath: path.join(
+                AppConfig.TMP_DIR,
+                `${Utils.genRandomStr(5)}.jpg`,
+              ),
+              maskSavePath: path.join(
+                AppConfig.TMP_DIR,
+                `${Utils.genRandomStr(5)}.jpg`,
+              ),
+              shildInfo: {
+                path: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\37.20241016_test1\\37.20241016_test1\\map.png',
+                col: this.materialBO.recipeBO.maxCol,
+                row: this.materialBO.recipeBO.maxRow,
+              },
+            };
             const { anomalyList, flawList } = await this.anomalyRemote(
               fno,
-              null,
+              anomalyParam,
             );
             // flawList 插入数据库
             this.insertFlaws(patternId, cntPerLightType, flawList);
@@ -498,13 +531,13 @@ export class DetectService {
   ): Promise<AnomalyRes> {
     const anomalyUrl = `${this.anomalyRemoteCfg.host}:${this.anomalyRemoteCfg.port}/anomaly/anomaly`;
     try {
-      const param = mockAnomalyParam(fno);
+      // const param = mockAnomalyParam(fno);
       objToFile(
-        param,
+        anomalyParam,
         path.join(this.materialBO.detectParamPath, 'anomalyParams'),
-        `${param.fno}.json`,
+        `${fno}.json`,
       );
-      const res = await axios.post(anomalyUrl, param); // TODO mock请求参数
+      const res = await axios.post(anomalyUrl, anomalyParam);
       const data = res.data.data;
       return data;
     } catch (error) {

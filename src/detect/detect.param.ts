@@ -25,7 +25,6 @@ export interface MeasureParam {
 
 export interface AnomalyParam {
   fno: number;
-  imageName: string;
   imagePath: string;
   // imageBuf: Buffer;
   dbName: string;

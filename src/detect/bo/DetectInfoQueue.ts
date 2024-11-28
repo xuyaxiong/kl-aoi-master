@@ -47,6 +47,9 @@ export class DetectInfoQueue {
       const lightName = detectCfg.name;
       const patternId = detectCfg.patternId;
       const detectTypeList = detectCfg.detectTypeList;
+      const ignores = detectCfg.ignores;
+      const anomalyThreshold = detectCfg.anomaly;
+      const modelFile = detectCfg.modelFile;
       const pos = this.posQueue.shift();
       const imagePtr = this.imagePtrQueue.shift();
       assert(pos !== undefined, '坐标不能为空');
@@ -71,6 +74,9 @@ export class DetectInfoQueue {
           patternId,
           cntPerLightType: this.imgCntPerLightType.get(lightType),
           imgPath: fullpath,
+          ignores,
+          anomalyThreshold,
+          modelFile,
         });
       }
       return tmpDetectInfoList;

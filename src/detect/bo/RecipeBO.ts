@@ -40,6 +40,9 @@ const mockConfig = {
       lightType: 'COAXIAL',
       enableAnomaly: true,
       enableMeasure: true,
+      modelFile: '20241016_test1.huanguang.db',
+      anomaly: 0.7,
+      ignores: [0],
     },
     // {
     //   id: 2,
@@ -106,8 +109,8 @@ export class RecipeBO {
 
   private parse() {
     // TODO 从真实配置中解析数据
-    const config = JSON.parse(this.config);
-    // const config = mockConfig;
+    // const config = JSON.parse(this.config);
+    const config = mockConfig;
 
     const detectCfgSeq = this.patternCfgToDetectCfg(config.patterns);
 

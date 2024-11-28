@@ -31,6 +31,9 @@ export interface DetectInfo {
   patternId: number;
   cntPerLightType: number;
   imgPath: string;
+  anomalyThreshold?: number;
+  ignores?: number[];
+  modelFile?: string;
 }
 
 export interface DetectCfg {
