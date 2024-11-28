@@ -24,7 +24,7 @@ export class RecipeService {
   async findAll(): Promise<Recipe[]> {
     return this.recipeRepository.find({
       order: {
-        sort: 'DESC',
+        sort: 'ASC',
       },
     });
   }

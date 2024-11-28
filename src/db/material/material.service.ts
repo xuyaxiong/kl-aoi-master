@@ -15,7 +15,7 @@ export class MaterialService {
     private readonly materialRepository: Repository<Material>,
   ) {}
 
-  async findAll(queryParam: QueryParam): Promise<PageRes<Material>> {
+  async page(queryParam: QueryParam): Promise<PageRes<Material>> {
     const queryBuilder = this.materialRepository.createQueryBuilder('material');
     if (queryParam.recipeId) {
       queryBuilder.andWhere('material.recipeId = :recipeId', {

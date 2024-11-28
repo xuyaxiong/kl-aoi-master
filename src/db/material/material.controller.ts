@@ -21,7 +21,7 @@ export class MaterialController {
   async findAll(
     @Body() queryParam: QueryParam,
   ): Promise<HttpResponse<PageRes<Material>>> {
-    return HttpResponse.ok(await this.materialService.findAll(queryParam));
+    return HttpResponse.ok(await this.materialService.page(queryParam));
   }
 
   @Get(':id')
