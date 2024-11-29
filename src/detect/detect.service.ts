@@ -109,7 +109,7 @@ export class DetectService {
   public async start(startParam: StartParam) {
     const { sn, recipeId } = startParam;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
-    this.corrector = new Corrector();
+    this.corrector = new Corrector(this.materialBO.outputPath);
     this.lensParams = await this.getLensParams();
     this.materialBO = await this.initMaterialBO(sn, recipeId);
     this.detectInfoQueue = new DetectInfoQueue(
@@ -371,7 +371,7 @@ export class DetectService {
             // 送测量
             const measureParam: MeasureParam = {
               fno,
-              imagePath: imgPath.replace("D:\\kl-storage\\", "X:\\"),
+              imagePath: imgPath.replace('D:\\kl-storage\\', 'X:\\'),
               imageSize: {
                 width: this.width,
                 height: this.height,
@@ -381,7 +381,10 @@ export class DetectService {
               lensParams: this.lensParams,
               mappingParams: this.materialBO.recipeBO.mappingParams,
               rectifyParams: this.rectifyParams,
-              modelPath: this.materialBO.recipeBO.measureChipModelFile.replace("D:\\kl-storage\\", "X:\\"),
+              modelPath: this.materialBO.recipeBO.measureChipModelFile.replace(
+                'D:\\kl-storage\\',
+                'X:\\',
+              ),
               chipNum: this.materialBO.recipeBO.chipNum,
               chipSize: this.materialBO.recipeBO.chipSize,
               roiCornerPoint: this.materialBO.recipeBO.roiCornerPoint,
