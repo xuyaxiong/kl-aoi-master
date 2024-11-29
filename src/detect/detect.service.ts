@@ -109,9 +109,9 @@ export class DetectService {
   public async start(startParam: StartParam) {
     const { sn, recipeId } = startParam;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
-    this.corrector = new Corrector(this.materialBO.outputPath);
     this.lensParams = await this.getLensParams();
     this.materialBO = await this.initMaterialBO(sn, recipeId);
+    this.corrector = new Corrector(this.materialBO.outputPath);
     this.detectInfoQueue = new DetectInfoQueue(
       this.materialBO.recipeBO.detectCfgSeq,
       this.materialBO.outputPath,

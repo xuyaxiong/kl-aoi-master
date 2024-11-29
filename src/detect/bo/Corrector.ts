@@ -1,6 +1,7 @@
 import { ImagePtr } from '../../camera/camera.bo';
 import { CapPos } from '../../plc/plc.bo';
 import { saveImagePtrSync } from '../../utils/image_utils';
+const path = require('path');
 
 export class Corrector {
   private pos1: CapPos;
