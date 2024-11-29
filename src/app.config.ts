@@ -5,6 +5,12 @@ const AppConfig = {
   CRASH_DUMP_DIR: 'D:\\kl-storage\\crashDump\\aoi-master', // dll崩溃dump文件保存路径
   APP_LOG_DIR: 'D:\\kl-storage\\app-logs\\aoi-master', // 服务日志保存路径
   TMP_DIR: 'D:\\tmp', // 临时文件夹
+  detectCamType: 'Hik',
+  plcTcpConfig: {
+    name: 'PLC通信',
+    host: '192.168.0.3',
+    port: 5000,
+  },
   imgInfo: {
     width: 5120,
     height: 5120,

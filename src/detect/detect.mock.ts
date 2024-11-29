@@ -118,7 +118,8 @@ export function mockMeasureParam(fno: number) {
       1.000001001877541, 0, -0.0004724222292509239, 0, 1.0000010019284673,
       0.0006768340244889259, 0, 0, 1,
     ],
-    modelPath: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\chip2.ncc;',
+    modelPath: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\chip1.ncc;',
+    padModelPath: 'C:\\Users\\xuyax\\Desktop\\test_measure_data\\pad1.ncc;',
     chipNum: 1,
     chipSize: [
       0.16670243346758823, 0.14292144593974596, 0.7620682672804033,

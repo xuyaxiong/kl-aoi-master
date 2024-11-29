@@ -65,7 +65,7 @@ enum DetectStatus {
   DETECTING,
 }
 
-const MOCK_OPEN = true;
+const MOCK_OPEN = false;
 
 @Injectable()
 export class DetectService {
@@ -77,7 +77,7 @@ export class DetectService {
   private corrector: Corrector;
   private measureRemoteCfg: MeasureRemoteCfg;
   private anomalyRemoteCfg: AnomalyRemoteCfg;
-  private detectStatus: DetectStatus = DetectStatus.DETECTING;
+  private detectStatus: DetectStatus = DetectStatus.IDLE;
 
   private baseRecipePath: string;
   private width: number;
@@ -374,9 +374,9 @@ export class DetectService {
               fno,
               imagePath: imgPath.replace('D:\\kl-storage\\', 'X:\\'),
               imageSize: {
-                width: this.width,
-                height: this.height,
-                channel: this.channel,
+                width: this.materialBO.imgInfo.width,
+                height: this.materialBO.imgInfo.height,
+                channel: this.materialBO.imgInfo.channel,
               },
               pos: [pos.x, pos.y],
               lensParams: this.materialBO.lensParams,

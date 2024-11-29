@@ -114,8 +114,8 @@ export class RecipeBO {
 
   private parse() {
     // TODO 从真实配置中解析数据
-    // const config = JSON.parse(this.config);
-    const config = mockConfig;
+    const config = JSON.parse(this.config);
+    // const config = mockConfig;
 
     const detectCfgSeq = this.patternCfgToDetectCfg(config.patterns);
 
@@ -147,13 +147,13 @@ export class RecipeBO {
     const roiCornerPoint = config.roiCornerMotor;
     const measureChipModelFile =
       config.measureChipModelFile
-        .split(';')
+        .split(',')
         .filter((item) => item !== '')
         .map((item) => path.join(this.recipePath, item))
         .join(';') + ';';
     const measurePadModelFile =
       config.measurePadModelFile
-        .split(';')
+        .split(',')
         .filter((item) => item !== '')
         .map((item) => path.join(this.recipePath, item))
         .join(';') + ';';

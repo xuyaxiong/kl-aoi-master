@@ -27,6 +27,7 @@ import {
   SwitchModeIns,
   TakePhotoIns,
 } from './plc.ins';
+import AppConfig from '../app.config';
 
 @Injectable()
 export class PlcService {
@@ -34,7 +35,7 @@ export class PlcService {
   private plcTcpConfig: PlcTcpConfig;
 
   constructor(private readonly configService: ConfigService) {
-    this.plcTcpConfig = this.configService.get<PlcTcpConfig>('plcTcpConfig');
+    this.plcTcpConfig = AppConfig.plcTcpConfig;
     this.client = new ClientProxy(
       this.plcTcpConfig.name,
       this.plcTcpConfig.host,

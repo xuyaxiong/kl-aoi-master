@@ -9,6 +9,7 @@ import { Camera, ImagePtr } from './camera.bo';
 import { SysDictService } from '../db/dict/SysDict.service';
 import { UpdateCamCfgParam } from './camera.param';
 import '../extension';
+import AppConfig from '../app.config';
 
 @Injectable()
 export class CameraService {
@@ -21,7 +22,7 @@ export class CameraService {
     private readonly configService: ConfigService,
     private readonly sysDictService: SysDictService,
   ) {
-    this.detectCamType = this.configService.get<string>('detectCamType');
+    this.detectCamType = AppConfig.detectCamType;
     // 从数据库中获取镜头畸变参数
     this.getCamCfgByName('undistortParams').then((undistortParams) => {
       this.initCamera(undistortParams);
