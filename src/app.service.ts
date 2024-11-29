@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import AppConfig from './app.config';
 
 @Injectable()
 export class AppService {
@@ -18,7 +19,8 @@ export class AppService {
   }
 
   getConfig() {
-    const retConfig = { ...this.configService['internalConfig'] };
+    const imgInfo = AppConfig.imgInfo;
+    const retConfig = { ...this.configService['internalConfig'], ...imgInfo };
     return retConfig;
   }
 }

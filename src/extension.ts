@@ -30,6 +30,6 @@ Array.prototype.intToBuffer = function () {
 
 String.prototype.toBuffer = function (length = 256) {
   const tmpBuf = Buffer.alloc(length);
-  ref.writeCString(tmpBuf, 0, this);
+  ref.writeCString(tmpBuf, 0, this.toString());
   return tmpBuf;
 };

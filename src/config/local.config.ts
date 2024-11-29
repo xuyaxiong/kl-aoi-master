@@ -10,7 +10,4 @@ export default () => ({
   recipePath: 'D:\\kl-storage\\gallery\\recipe\\',
   dbPath: 'D:\\kl-storage\\gallery\\db\\',
   samplePath: 'D:\\kl-storage\\gallery\\sample\\',
-  width: 5120,
-  height: 5120,
-  channel: 3,
 });

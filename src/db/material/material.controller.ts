@@ -10,7 +10,11 @@ import {
 import { MaterialService } from './material.service';
 import { Material } from './material.entity';
 import HttpResponse from '../../utils/api_res';
-import { GetMapCsvResultParam, QueryParam } from './material.param';
+import {
+  GetMapCsvResultParam,
+  QueryParam,
+  SaveFullImgParam,
+} from './material.param';
 import { PageRes } from './material.types';
 
 @Controller('material')
@@ -25,7 +29,7 @@ export class MaterialController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<HttpResponse<Material>> {
+  async findById(@Param('id') id: string): Promise<HttpResponse<Material>> {
     return HttpResponse.ok(await this.materialService.findById(id));
   }
 
@@ -72,6 +76,21 @@ export class MaterialController {
       return HttpResponse.ok(data);
     } catch (error) {
       return HttpResponse.err();
+    }
+  }
+
+  @Post('saveFullImg')
+  async saveFullImg(@Body() saveFullImgParam: SaveFullImgParam) {
+    const { materialId, unit } = saveFullImgParam;
+    try {
+      const outputPath = await this.materialService.saveFullImg(
+        materialId,
+        saveFullImgParam.patternId,
+        unit,
+      );
+      return HttpResponse.ok(outputPath);
+    } catch (error) {
+      return HttpResponse.err(error.message);
     }
   }
 }

@@ -6,6 +6,7 @@ import AppConfig from '../../app.config';
 export class MaterialBO {
   public readonly id: string;
   public readonly startTime: Date;
+  public readonly imgInfo = AppConfig.imgInfo;
   public readonly outputPath: string;
   public readonly dataOutputPath: string;
   public readonly detectParamPath: string;
@@ -15,6 +16,7 @@ export class MaterialBO {
   constructor(
     private readonly sn: string,
     public readonly recipeBO: RecipeBO,
+    public readonly lensParams: LensParams,
   ) {
     this.id = dayjs().format('YYYYMMDDHHmmss');
     this.sn = this.id;
@@ -55,6 +57,8 @@ export class MaterialBO {
       dataOutputPath: this.dataOutputPath,
       startTime: this.startTime,
       endTime: new Date(),
+      imgInfo: JSON.stringify(this.imgInfo),
+      lensParams: JSON.stringify(this.lensParams),
     };
   }
 }

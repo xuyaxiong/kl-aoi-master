@@ -84,7 +84,6 @@ export class DetectService {
   private height: number;
   private channel: number;
 
-  private lensParams: LensParams;
   private rectifyParams: RectifyParams = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
   constructor(
@@ -109,8 +108,8 @@ export class DetectService {
   public async start(startParam: StartParam) {
     const { sn, recipeId } = startParam;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
-    this.lensParams = await this.getLensParams();
-    this.materialBO = await this.initMaterialBO(sn, recipeId);
+    const lensParams = await this.getLensParams();
+    this.materialBO = await this.initMaterialBO(sn, recipeId, lensParams);
     this.corrector = new Corrector(this.materialBO.outputPath);
     this.detectInfoQueue = new DetectInfoQueue(
       this.materialBO.recipeBO.detectCfgSeq,
@@ -191,7 +190,7 @@ export class DetectService {
         await capMeasureDefectImgs(
           this.detectInfoQueue.imageInfoMap,
           measureDefectDataItemList,
-          this.lensParams,
+          this.materialBO.lensParams,
           this.materialBO.recipeBO.mappingParams,
           this.materialBO.recipeBO.rectifyParams,
           this.materialBO.recipeBO.chipSize,
@@ -276,7 +275,7 @@ export class DetectService {
       // 3.1. 下发拍照点位
       const capPosList = transOrigDotListToCapPosList(
         this.materialBO.recipeBO.dotList,
-        this.lensParams,
+        this.materialBO.lensParams,
         [1, 0, 0, 0, 1, 0, 0, 0, 1],
       );
       await this.plcService.capPos({
@@ -326,7 +325,7 @@ export class DetectService {
               ignores,
               isFirst: false,
               pos: [pos.x, pos.y],
-              lensParams: this.lensParams,
+              lensParams: this.materialBO.lensParams,
               mappingParams: this.materialBO.recipeBO.mappingParams,
               rectifyParams: this.rectifyParams,
               chipNum: this.materialBO.recipeBO.chipNum,
@@ -378,7 +377,7 @@ export class DetectService {
                 channel: this.channel,
               },
               pos: [pos.x, pos.y],
-              lensParams: this.lensParams,
+              lensParams: this.materialBO.lensParams,
               mappingParams: this.materialBO.recipeBO.mappingParams,
               rectifyParams: this.rectifyParams,
               modelPath: this.materialBO.recipeBO.measureChipModelFile.replace(
@@ -427,7 +426,11 @@ export class DetectService {
     });
   }
 
-  private async initMaterialBO(sn: string, recipeId: number) {
+  private async initMaterialBO(
+    sn: string,
+    recipeId: number,
+    lensParams: LensParams,
+  ) {
     const recipe = await this.recipeService.findById(recipeId);
     const recipeBO = new RecipeBO(
       recipeId,
@@ -435,7 +438,7 @@ export class DetectService {
       this.baseRecipePath,
       recipe.config,
     );
-    return new MaterialBO(sn, recipeBO);
+    return new MaterialBO(sn, recipeBO, lensParams);
   }
 
   // 运动到该位置

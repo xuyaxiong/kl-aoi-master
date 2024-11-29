@@ -11,6 +11,12 @@ export interface QueryParam {
   sort: 'ASC' | 'DESC';
 }
 
-export class GetMapCsvResultParam {
+export interface GetMapCsvResultParam {
   csv: string;
+}
+
+export interface SaveFullImgParam {
+  materialId: string;
+  patternId: number;
+  unit: number;
 }

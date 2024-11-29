@@ -2,9 +2,15 @@ const path = require('path');
 import * as os from 'os';
 import * as KLBuffer from 'kl-buffer';
 import * as dayjs from 'dayjs';
+const _ = require('lodash');
+const assert = require('assert');
+const fs = require('fs');
 import Utils from './Utils';
 import { Image, ImagePtr } from '../camera/camera.bo';
 import shmemDll from '../wrapper/shmem';
+import rectifyDll from '../wrapper/rectify';
+import { CapPos } from '../plc/plc.bo';
+import '../extension';
 
 export function loadImage(
   path: string,
@@ -171,4 +177,81 @@ export function loadImageAsync(
       },
     );
   });
+}
+
+// 拼全图
+export async function saveFullImg(
+  width: number,
+  height: number,
+  channel: number,
+  uniqueName: string,
+  lensParams: number[],
+  baseDir: string,
+  imgDir: string,
+  dataOutputPath: string,
+  unit = 5, // unit越小生成的全景图越大
+  imgType: 'jpg' | 'png',
+) {
+  console.log('开始拼图');
+  const imgNameBuf = uniqueName.toBuffer();
+  const res1 = rectifyDll.initMosaic(
+    imgNameBuf,
+    unit,
+    lensParams.doubleToBuffer(),
+  );
+  assert.equal(res1, 0, '调用initMosaic失败');
+  const dirPath = path.join(baseDir, imgDir);
+  const fileList = fs
+    .readdirSync(dirPath)
+    .filter((file) => file.endsWith('.jpg'));
+  const posList = fileList.map((file) => parseImgName(file));
+
+  const filePosList = _.zipWith(fileList, posList, (file, pos) => {
+    return { file, pos };
+  });
+  const totalImgNum = filePosList.length;
+  const batch_size = 50;
+  const filePosBatchArr = _.chunk(filePosList, batch_size);
+  for (let i = 0; i < filePosBatchArr.length; ++i) {
+    const batch = filePosBatchArr[i];
+    const posArr = batch.map((item) => item.pos);
+    const fileArr = batch.map((item) => item.file);
+    const loadFilePromiseList = fileArr.map((file) => {
+      const fullPath = `${dirPath}/${file}`;
+      return loadImageAsync(fullPath, width, height, channel);
+    });
+    const imgArr = await Promise.all(loadFilePromiseList);
+    const imgPosBatch = _.zipWith(imgArr, posArr, (img, pos) => {
+      return { image: img, pos };
+    });
+    for (const [index, { image, pos }] of imgPosBatch.entries()) {
+      console.log(`update ${i * batch_size + (index + 1)}/${totalImgNum}...`);
+      const res2 = rectifyDll.updateMosaic(
+        imgNameBuf,
+        image.buffer,
+        image.height,
+        image.width,
+        image.channel,
+        [pos.x, pos.y].doubleToBuffer(),
+      );
+      assert.equal(res2, 0, '调用updateMosaic失败');
+    }
+  }
+  Utils.ensurePathSync(dataOutputPath);
+  const outputPath = path.join(dataOutputPath, `full_img_${unit}.${imgType}`);
+  const res3 = rectifyDll.saveMosaic(imgNameBuf, outputPath.toBuffer(), true);
+  assert.equal(res3, 0, '调用saveMosaic失败');
+  const res4 = rectifyDll.freeMosaic(imgNameBuf);
+  assert.equal(res4, 0, '调用freeMosaic失败');
+  console.log(`拼图完成: ${outputPath}`);
+  return outputPath;
+}
+
+// 1_204.3885040283203_215.08619689941406.png
+const IMG_NAME_REG = /\d+_(-?\d+(\.\d+)?)_(-?\d+(\.\d+)?).[jpg|png]/;
+function parseImgName(imgName: string): CapPos {
+  const res = imgName.match(IMG_NAME_REG);
+  const x = parseFloat(res[1]);
+  const y = parseFloat(res[3]);
+  return { x, y };
 }

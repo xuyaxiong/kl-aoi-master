@@ -7,12 +7,16 @@ const readline = require('readline');
 import { Material } from './material.entity';
 import { QueryParam } from './material.param';
 import { PageRes } from './material.types';
+import { saveFullImg } from 'src/utils/image_utils';
+import { Pattern } from '../pattern/pattern.entity';
 
 @Injectable()
 export class MaterialService {
   constructor(
     @InjectRepository(Material)
     private readonly materialRepository: Repository<Material>,
+    @InjectRepository(Pattern)
+    private readonly patternRepository: Repository<Pattern>,
   ) {}
 
   async page(queryParam: QueryParam): Promise<PageRes<Material>> {
@@ -149,5 +153,32 @@ export class MaterialService {
     }
     lines.slice(1);
     return lines;
+  }
+
+  public async saveFullImg(id: string, patternId: number, unit: number) {
+    const material = await this.findById(id);
+    const pattern = await this.patternRepository.findOneBy({ id: patternId });
+    const lensParams = JSON.parse(material.lensParams);
+    const imgInfo = JSON.parse(material.imgInfo);
+    const patternName = pattern.name;
+    const dirName = fs
+      .readdirSync(path.join(material.outputPath, 'imgs'))
+      .filter((name: string) => {
+        return name.includes(patternName);
+      })[0];
+    const imgDir = `imgs/${dirName}`;
+    const outputPath = await saveFullImg(
+      imgInfo.width,
+      imgInfo.height,
+      imgInfo.channel,
+      id,
+      lensParams,
+      material.outputPath,
+      imgDir,
+      material.dataOutputPath,
+      unit ? unit : 5,
+      'jpg',
+    );
+    return outputPath;
   }
 }
