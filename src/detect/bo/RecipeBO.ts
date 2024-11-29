@@ -61,6 +61,7 @@ const mockConfig = {
     -0.0031858581209718295, 0.006539127039388859,
   ],
   measureChipModelFile: 'chip2.ncc;',
+  measurePadModelFile: 'chip2.ncc;',
   mapImgPath: 'map.png',
 };
 
@@ -96,6 +97,7 @@ export class RecipeBO {
 
   public readonly roiCornerPoint: number[];
   public readonly measureChipModelFile: string;
+  public readonly measurePadModelFile: string;
 
   constructor(
     public readonly id: number,
@@ -149,6 +151,12 @@ export class RecipeBO {
         .filter((item) => item !== '')
         .map((item) => path.join(this.recipePath, item))
         .join(';') + ';';
+    const measurePadModelFile =
+      config.measurePadModelFile
+        .split(';')
+        .filter((item) => item !== '')
+        .map((item) => path.join(this.recipePath, item))
+        .join(';') + ';';
 
     return {
       detectCfgSeq,
@@ -170,6 +178,7 @@ export class RecipeBO {
       chipMeasureR,
       roiCornerPoint,
       measureChipModelFile,
+      measurePadModelFile,
     };
   }
 

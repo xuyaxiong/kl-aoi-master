@@ -346,6 +346,8 @@ export class DetectService {
               fno,
               anomalyParam,
             );
+            // TODO anomalyList 传递给前端
+
             // flawList 插入数据库
             this.insertFlaws(patternId, cntPerLightType, flawList);
             // 保存外观缺陷小图信息
@@ -384,6 +386,11 @@ export class DetectService {
                 'D:\\kl-storage\\',
                 'X:\\',
               ),
+              padModelPath:
+                this.materialBO.recipeBO.measurePadModelFile.replace(
+                  'D:\\kl-storage\\',
+                  'X:\\',
+                ),
               chipNum: this.materialBO.recipeBO.chipNum,
               chipSize: this.materialBO.recipeBO.chipSize,
               roiCornerPoint: this.materialBO.recipeBO.roiCornerPoint,
