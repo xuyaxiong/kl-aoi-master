@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import localConfig from './config/local.config';
@@ -12,6 +17,7 @@ import { PlcModule } from './plc/plc.module';
 import { CameraModule } from './camera/camera.module';
 import { AOIDBModule } from '@koala123/aoi-db';
 import AppConfig from './app.config';
+import { ProxyMiddleware } from './middleware/proxy.middle';
 
 @Module({
   imports: [
@@ -26,16 +32,22 @@ import AppConfig from './app.config';
     DatabaseModule,
     PlcModule,
     CameraModule,
-    AOIDBModule.forRoot({
-      width: AppConfig.imgInfo.width,
-      height: AppConfig.imgInfo.height,
-      channel: AppConfig.imgInfo.channel,
-      dbPath: AppConfig.exportPath.dbPath,
-      dllPath: AppConfig.DLL_PATH,
-    }),
+    // AOIDBModule.forRoot({
+    //   width: AppConfig.imgInfo.width,
+    //   height: AppConfig.imgInfo.height,
+    //   channel: AppConfig.imgInfo.channel,
+    //   dbPath: AppConfig.exportPath.dbPath,
+    //   dllPath: AppConfig.DLL_PATH,
+    // }),
     DetectModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(ProxyMiddleware)
+      .forRoutes({ path: 'aoiDB/*', method: RequestMethod.ALL });
+  }
+}
