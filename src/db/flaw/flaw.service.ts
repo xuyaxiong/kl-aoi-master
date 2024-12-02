@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InsertResult, Repository } from 'typeorm';
 import { Flaw } from './flaw.entity';
-import { QueryParam } from './flaw.param';
 
 @Injectable()
 export class FlawService {
@@ -11,21 +10,25 @@ export class FlawService {
     private readonly flawRepository: Repository<Flaw>,
   ) {}
 
-  async findAll(queryParam: QueryParam): Promise<Flaw[]> {
+  async findAll(
+    materialId: string,
+    patternId: number,
+    imgIndex: number,
+  ): Promise<Flaw[]> {
     const queryBuilder = this.flawRepository.createQueryBuilder('flaw');
-    if (queryParam.materialId) {
+    if (materialId) {
       queryBuilder.andWhere('flaw.materialId = :materialId', {
-        materialId: queryParam.materialId,
+        materialId,
       });
     }
-    if (queryParam.patternId) {
+    if (patternId) {
       queryBuilder.andWhere('flaw.patternId = :patternId', {
-        patternId: queryParam.patternId,
+        patternId,
       });
     }
-    if (queryParam.imgIndex !== null && queryParam.imgIndex !== undefined) {
+    if (imgIndex !== null && imgIndex !== undefined) {
       queryBuilder.andWhere('flaw.imgIndex = :imgIndex', {
-        imgIndex: queryParam.imgIndex,
+        imgIndex,
       });
     }
     return await queryBuilder.getMany();

@@ -6,19 +6,25 @@ import {
   Body,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { FlawService } from './flaw.service';
 import { Flaw } from './flaw.entity';
 import HttpResponse from 'src/utils/api_res';
-import { QueryParam } from './flaw.param';
 
 @Controller('flaw')
 export class FlawController {
   constructor(private readonly flawService: FlawService) {}
 
   @Get()
-  async findAll(@Body() queryParam: QueryParam): Promise<HttpResponse<Flaw[]>> {
-    return HttpResponse.ok(await this.flawService.findAll(queryParam));
+  async findAll(
+    @Query('materialId') materialId: string,
+    @Query('patternId') patternId: number,
+    @Query('imgIndex') imgIndex: number,
+  ): Promise<HttpResponse<Flaw[]>> {
+    return HttpResponse.ok(
+      await this.flawService.findAll(materialId, patternId, imgIndex),
+    );
   }
 
   @Get(':id')
