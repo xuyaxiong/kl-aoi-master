@@ -11,6 +11,7 @@ import { AOIDBModule } from './aoiDB/aoiDB.module';
 import { DetectModule } from './detect/detect.module';
 import { PlcModule } from './plc/plc.module';
 import { CameraModule } from './camera/camera.module';
+import AppConfig from './app.config';
 
 @Module({
   imports: [

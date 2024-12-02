@@ -101,7 +101,7 @@ export class DetectService {
     this.width = this.configService.get<number>('width');
     this.height = this.configService.get<number>('height');
     this.channel = this.configService.get<number>('channel');
-    this.baseRecipePath = this.configService.get<string>('recipePath');
+    this.baseRecipePath = AppConfig.exportPath.recipePath;
     this.setReportDataHandler();
   }
 

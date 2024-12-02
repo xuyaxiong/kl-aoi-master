@@ -20,7 +20,12 @@ export class AppService {
 
   getConfig() {
     const imgInfo = AppConfig.imgInfo;
-    const retConfig = { ...this.configService['internalConfig'], ...imgInfo };
+    const exportPath = AppConfig.exportPath;
+    const retConfig = {
+      ...this.configService['internalConfig'],
+      ...imgInfo,
+      ...exportPath,
+    };
     return retConfig;
   }
 }

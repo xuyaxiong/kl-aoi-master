@@ -1,4 +1,4 @@
-import * as KLBuffer from 'kl-buffer';
+import KLBuffer from 'kl-buffer';
 
 export interface Camera {
   sn: string;

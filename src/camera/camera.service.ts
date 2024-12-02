@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 import '../extension';
 const _ = require('lodash');
-import * as KLBuffer from 'kl-buffer';
+import KLBuffer from 'kl-buffer';
 import waferDll from '../wrapper/wafer';
 import { Camera, ImagePtr } from './camera.bo';
 import { SysDictService } from '../db/dict/SysDict.service';

@@ -5,6 +5,7 @@ import { Recipe } from './recipe.entity';
 import { ConfigService } from '@nestjs/config';
 const path = require('path');
 import * as fsExtra from 'fs-extra';
+import AppConfig from '../../app.config';
 
 @Injectable()
 export class RecipeService {
@@ -14,7 +15,7 @@ export class RecipeService {
     private readonly recipeRepository: Repository<Recipe>,
     private readonly configService: ConfigService,
   ) {
-    this.recipePath = this.configService.get<string>('recipePath');
+    this.recipePath = AppConfig.exportPath.recipePath;
   }
 
   private formatRecipePath(id: number, name: string) {

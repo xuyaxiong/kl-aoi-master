@@ -5,6 +5,7 @@ import { Defect } from './defect.entity';
 import { ConfigService } from '@nestjs/config';
 const fs = require('fs');
 const path = require('path');
+import AppConfig from '../../app.config';
 
 @Injectable()
 export class DefectService {
@@ -14,7 +15,7 @@ export class DefectService {
     private readonly defectRepository: Repository<Defect>,
     private readonly configService: ConfigService,
   ) {
-    this.samplePath = this.configService.get<string>('samplePath');
+    this.samplePath = AppConfig.exportPath.samplePath;
   }
 
   async findAll(): Promise<Defect[]> {

@@ -1,6 +1,6 @@
 const path = require('path');
 import * as os from 'os';
-import * as KLBuffer from 'kl-buffer';
+import KLBuffer from 'kl-buffer';
 import * as dayjs from 'dayjs';
 const _ = require('lodash');
 const assert = require('assert');
