@@ -22,7 +22,7 @@
     "test:unit": "jest --config ./test/jest-unit.json"
   },
   "dependencies": {
-    "@koala123/aoi-db": "^1.0.1",
+    "@koala123/aoi-db": "^1.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",

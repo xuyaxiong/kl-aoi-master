@@ -42,6 +42,10 @@ export class DefectController {
 
   @Delete(':id')
   async delete(@Param('id') id: number): Promise<HttpResponse<void>> {
-    return HttpResponse.ok(await this.defectService.delete(id));
+    try {
+      return HttpResponse.ok(await this.defectService.delete(id));
+    } catch (error) {
+      return HttpResponse.err(error.message);
+    }
   }
 }

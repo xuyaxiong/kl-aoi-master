@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 const fs = require('fs');
 const path = require('path');
 import AppConfig from '../../app.config';
+const axios = require('axios');
 
 @Injectable()
 export class DefectService {
@@ -41,10 +42,19 @@ export class DefectService {
   }
 
   async delete(id: number): Promise<void> {
+    // 远程调用 /aoiDB/defect/{id} 接口
+    await deleteDefectById(id);
     // 需删除对应文件夹
     removeDefectDirById(this.samplePath, id);
     await this.defectRepository.delete(id);
   }
+}
+
+async function deleteDefectById(id: number) {
+  const { host, port } = AppConfig.anomalyRemoteCfg;
+  const target = `${host}:${port}`;
+  const response = await axios.delete(`${target}/api/aoiDB/defect/${id}`);
+  return response.data;
 }
 
 function updateDefectDirName(dir: string, defectId: number, newName: string) {
