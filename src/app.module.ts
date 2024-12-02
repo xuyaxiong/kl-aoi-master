@@ -7,10 +7,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './db/database.module';
 import { WsModule } from './ws/ws.module';
-import { AOIDBModule } from './aoiDB/aoiDB.module';
 import { DetectModule } from './detect/detect.module';
 import { PlcModule } from './plc/plc.module';
 import { CameraModule } from './camera/camera.module';
+import { AOIDBModule } from '@koala123/aoi-db';
 import AppConfig from './app.config';
 
 @Module({
@@ -26,7 +26,13 @@ import AppConfig from './app.config';
     DatabaseModule,
     PlcModule,
     CameraModule,
-    AOIDBModule,
+    AOIDBModule.forRoot({
+      width: AppConfig.imgInfo.width,
+      height: AppConfig.imgInfo.height,
+      channel: AppConfig.imgInfo.channel,
+      dbPath: AppConfig.exportPath.dbPath,
+      dllPath: AppConfig.DLL_PATH,
+    }),
     DetectModule,
   ],
   controllers: [AppController],
