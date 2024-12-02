@@ -46,8 +46,8 @@ import { ProxyMiddleware } from './middleware/proxy.middle';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ProxyMiddleware)
-      .forRoutes({ path: 'aoiDB/*', method: RequestMethod.ALL });
+      consumer
+        .apply(ProxyMiddleware)
+        .forRoutes({ path: 'aoiDB/*', method: RequestMethod.ALL });
   }
 }

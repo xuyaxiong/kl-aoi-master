@@ -39,7 +39,6 @@
     "ffi-napi": "^4.0.3",
     "figlet": "^1.8.0",
     "fs-extra": "^11.2.0",
-    "http-proxy-middleware": "^3.0.3",
     "kl-buffer": "^1.0.4",
     "kl-ins": "^1.1.3",
     "lodash": "^4.17.21",
