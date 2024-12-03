@@ -144,3 +144,10 @@ export interface MergedDetectData {
   C: number;
   chipList: ChipDetectInfo[];
 }
+
+export enum DetectStage {
+  INCOMING = 'INCOMING', // 检测开始
+  DETECT_PROGRESS_ANOMALY_DONE = 'DETECT_PROGRESS.ANOMALY_DONE',
+  DETECT_PROGRESS_MEASURE_DONE = 'DETECT_PROGRESS.MEASURE_DONE',
+  OUTING = 'OUTING', // 检测结束
+}

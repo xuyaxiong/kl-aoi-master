@@ -34,6 +34,7 @@ import {
   RecipeBO,
   ReportPos,
   Corrector,
+  DetectStage,
 } from './bo';
 import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from '../db/recipe/recipe.service';
@@ -57,6 +58,7 @@ import { MaterialService } from '../db/material/material.service';
 import AppConfig from '../app.config';
 import { SysDictService } from './../db/dict/SysDict.service';
 import Utils from 'src/utils/Utils';
+import { WsGateway } from '../ws/ws.gateway';
 
 enum DetectStatus {
   IDLE,
@@ -95,6 +97,7 @@ export class DetectService {
     private readonly recipeService: RecipeService,
     private readonly flawService: FlawService,
     private readonly sysDictService: SysDictService,
+    private ws: WsGateway,
   ) {
     this.measureRemoteCfg = AppConfig.measureRemoteCfg;
     this.anomalyRemoteCfg = AppConfig.anomalyRemoteCfg;
@@ -199,6 +202,10 @@ export class DetectService {
 
         // ! 插入material
         this.materialService.create(this.materialBO.mapToMaterial());
+
+        this.postMessageToWeb(DetectStage.OUTING, {
+          matierialId: this.materialBO.id,
+        });
       },
     );
 
@@ -212,6 +219,9 @@ export class DetectService {
       await this.plcService.initPlc();
       await this.plcService.startPlc();
     }
+    this.postMessageToWeb(DetectStage.INCOMING, {
+      materialId: this.materialBO.id,
+    });
   }
 
   @OnEvent('startCorrection')
@@ -347,7 +357,11 @@ export class DetectService {
               anomalyParam,
             );
             // TODO anomalyList 传递给前端
-
+            // this.postMessageToWeb(DetectStage.DETECT_PROGRESS_ANOMALY_DONE, {
+            //   materialId: this.materialBO.id,
+            //   patternId,
+            //   flaws: anomalyList,
+            // });
             // flawList 插入数据库
             this.insertFlaws(patternId, cntPerLightType, flawList);
             // 保存外观缺陷小图信息
@@ -562,6 +576,13 @@ export class DetectService {
         anomalyList: [],
       } as AnomalyRes;
     }
+  }
+
+  private postMessageToWeb(event: string, data: object) {
+    this.ws.publish('progress', {
+      event,
+      data,
+    });
   }
 
   private async insertFlaws(

@@ -7,6 +7,7 @@ import { RecipeModule } from '../db/recipe/recipe.module';
 import { FlawModule } from '../db/flaw/flaw.module';
 import { MaterialModule } from '../db/material/material.module';
 import { SysDictModule } from '../db/dict/SysDict.module';
+import { WsModule } from '../ws/ws.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SysDictModule } from '../db/dict/SysDict.module';
     RecipeModule,
     FlawModule,
     SysDictModule,
+    WsModule,
   ],
   controllers: [DetectController],
   providers: [DetectService],
