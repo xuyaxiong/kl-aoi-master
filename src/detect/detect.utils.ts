@@ -314,8 +314,9 @@ export function exportMergedDataList(
   for (const mergedData of mergedDataList) {
     const { R, C, chipList } = mergedData;
     for (const [idx, chip] of chipList.entries()) {
+      // ! 导出时R、C、chipId从1开始
       rows.push(
-        `${R},${C},${idx},${chip.types},${chip.dx},${chip.dy},${chip.dr}\n`,
+        `${R + 1},${C + 1},${idx + 1},${chip.types},${chip.dx},${chip.dy},${chip.dr}\n`,
       );
       count++;
       if (count >= limit) {
