@@ -1,6 +1,7 @@
 export interface publishData {
   event: string;
-  data: object;
+  state: string;
+  info: object;
 }
 
 export interface subscribeData {

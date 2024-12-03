@@ -151,3 +151,7 @@ export enum DetectStage {
   DETECT_PROGRESS_MEASURE_DONE = 'DETECT_PROGRESS.MEASURE_DONE',
   OUTING = 'OUTING', // 检测结束
 }
+
+export enum StageState {
+  END = 'END',
+}

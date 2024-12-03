@@ -35,6 +35,7 @@ import {
   ReportPos,
   Corrector,
   DetectStage,
+  StageState,
 } from './bo';
 import { AnomalyParam, MeasureParam, StartParam } from './detect.param';
 import { RecipeService } from '../db/recipe/recipe.service';
@@ -203,7 +204,7 @@ export class DetectService {
         // ! 插入material
         this.materialService.create(this.materialBO.mapToMaterial());
 
-        this.postMessageToWeb(DetectStage.OUTING, {
+        this.postMessageToWeb(DetectStage.OUTING, StageState.END, {
           matierialId: this.materialBO.id,
         });
       },
@@ -219,7 +220,7 @@ export class DetectService {
       await this.plcService.initPlc();
       await this.plcService.startPlc();
     }
-    this.postMessageToWeb(DetectStage.INCOMING, {
+    this.postMessageToWeb(DetectStage.INCOMING, StageState.END, {
       materialId: this.materialBO.id,
     });
   }
@@ -578,10 +579,11 @@ export class DetectService {
     }
   }
 
-  private postMessageToWeb(event: string, data: object) {
+  private postMessageToWeb(stage: string, state: string, data: object) {
     this.ws.publish('progress', {
-      event,
-      data,
+      event: stage,
+      state: state,
+      info: data,
     });
   }
 
