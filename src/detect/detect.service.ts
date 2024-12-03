@@ -523,7 +523,7 @@ export class DetectService {
   }
 
   public async measureRemote(fno: number, measureParam: MeasureParam) {
-    const measureUrl = `${this.measureRemoteCfg.host}:${this.measureRemoteCfg.port}/measure/measure`;
+    const measureUrl = `${this.measureRemoteCfg.host}:${this.measureRemoteCfg.port}/api/measure/measure`;
     try {
       // const param = mockMeasureParam(fno);
       objToFile(
@@ -544,7 +544,7 @@ export class DetectService {
     fno: number,
     anomalyParam: AnomalyParam,
   ): Promise<AnomalyRes> {
-    const anomalyUrl = `${this.anomalyRemoteCfg.host}:${this.anomalyRemoteCfg.port}/anomaly/anomaly`;
+    const anomalyUrl = `${this.anomalyRemoteCfg.host}:${this.anomalyRemoteCfg.port}/api/anomaly/anomaly`;
     try {
       // const param = mockAnomalyParam(fno);
       objToFile(
