@@ -80,7 +80,7 @@ export class RecipeBO {
   public readonly dotList: number[];
   public readonly totalDotNum: number;
   // 检测参数
-  public readonly rectifyParams: RectifyParams;
+  public readonly origRectifyParams: RectifyParams;
   public readonly mappingParams: MappingParams;
   // 物料信息
   public readonly maxRow: number;
@@ -129,7 +129,7 @@ export class RecipeBO {
     const dotList = config.roiDotList;
     const totalDotNum = dotList.length / 2;
 
-    const rectifyParams = config.rectifyParams;
+    const origRectifyParams = config.rectifyParams;
     const mappingParams = config.mapParams;
 
     const maxRow = config.designValue.maxRow;
@@ -166,7 +166,7 @@ export class RecipeBO {
       locationR,
       dotList,
       totalDotNum,
-      rectifyParams,
+      origRectifyParams,
       mappingParams,
       maxRow,
       maxCol,

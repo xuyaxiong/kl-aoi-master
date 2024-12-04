@@ -87,8 +87,6 @@ export class DetectService {
   private height: number;
   private channel: number;
 
-  private rectifyParams: RectifyParams = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
@@ -196,7 +194,7 @@ export class DetectService {
           measureDefectDataItemList,
           this.materialBO.lensParams,
           this.materialBO.recipeBO.mappingParams,
-          this.materialBO.recipeBO.rectifyParams,
+          this.materialBO.getRectifyParams(),
           this.materialBO.recipeBO.chipSize,
           this.materialBO.measureDefectCapImgPath,
         );
@@ -338,7 +336,7 @@ export class DetectService {
               pos: [pos.x, pos.y],
               lensParams: this.materialBO.lensParams,
               mappingParams: this.materialBO.recipeBO.mappingParams,
-              rectifyParams: this.rectifyParams,
+              rectifyParams: this.materialBO.getRectifyParams(),
               chipNum: this.materialBO.recipeBO.chipNum,
               chipSize: this.materialBO.recipeBO.chipSize,
               roiCornerPoint: this.materialBO.recipeBO.roiCornerPoint,
@@ -396,7 +394,7 @@ export class DetectService {
               pos: [pos.x, pos.y],
               lensParams: this.materialBO.lensParams,
               mappingParams: this.materialBO.recipeBO.mappingParams,
-              rectifyParams: this.rectifyParams,
+              rectifyParams: this.materialBO.getRectifyParams(),
               modelPath: this.materialBO.recipeBO.measureChipModelFile.replace(
                 'D:\\kl-storage\\',
                 'X:\\',

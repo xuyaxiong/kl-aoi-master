@@ -13,6 +13,8 @@ export class MaterialBO {
   public readonly anomalyDefectCapImgPath: string;
   public readonly measureDefectCapImgPath: string;
 
+  private rectifyParams: RectifyParams;
+
   constructor(
     private readonly sn: string,
     public readonly recipeBO: RecipeBO,
@@ -22,6 +24,7 @@ export class MaterialBO {
     this.sn = this.id;
     this.startTime = new Date();
     const nowDate = dayjs(this.startTime).format('YYYYMMDD');
+    this.rectifyParams = this.recipeBO.origRectifyParams;
     this.outputPath = path.join(
       AppConfig.BASE_MATERIAL_OUTPUT_PATH,
       nowDate,
@@ -48,6 +51,14 @@ export class MaterialBO {
     this.detectParamPath = path.join(this.outputPath, 'detectParams');
   }
 
+  public setRectifyParams(rectifyParams: RectifyParams) {
+    this.rectifyParams = rectifyParams;
+  }
+
+  public getRectifyParams() {
+    return this.rectifyParams;
+  }
+
   public mapToMaterial() {
     return {
       id: this.id,
@@ -59,6 +70,7 @@ export class MaterialBO {
       endTime: new Date(),
       imgInfo: JSON.stringify(this.imgInfo),
       lensParams: JSON.stringify(this.lensParams),
+      rectifyParams: JSON.stringify(this.rectifyParams),
     };
   }
 }
