@@ -107,11 +107,22 @@ export class DetectService {
     this.setReportDataHandler();
   }
 
+  private recipeId: number;
+  private lensParams: LensParams;
   public async start(startParam: StartParam) {
     const { sn, recipeId } = startParam;
+    this.recipeId = recipeId;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
-    const lensParams = await this.getLensParams();
-    this.materialBO = await this.initMaterialBO(sn, recipeId, lensParams);
+    this.lensParams = await this.getLensParams();
+  }
+
+  private async _start() {
+    // TODO 传入实际sn
+    this.materialBO = await this.initMaterialBO(
+      null,
+      this.recipeId,
+      this.lensParams,
+    );
     this.corrector = new Corrector(this.materialBO.outputPath);
     this.detectInfoQueue = new DetectInfoQueue(
       this.materialBO.recipeBO.detectCfgSeq,
@@ -214,10 +225,7 @@ export class DetectService {
         this.detectedCounter.detectCount.totalImgCnt,
         300,
       );
-    } else {
-      await this.plcService.initPlc();
-      await this.plcService.startPlc();
-    }
+    } 
     this.postMessageToWeb(DetectStage.INCOMING, StageState.END, {
       materialId: this.materialBO.id,
     });
@@ -440,6 +448,7 @@ export class DetectService {
         const status = data[7];
         if (status === 2) {
           console.log('receive start signal');
+          await this._start();
           this.eventEmitter.emit(`startCorrection`);
         }
       }
