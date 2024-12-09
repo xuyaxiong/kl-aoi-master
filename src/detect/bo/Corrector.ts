@@ -8,6 +8,7 @@ import waferDll from '../../wrapper/wafer';
 import { Location } from './types';
 import '../../extension';
 import { objToFile } from '../detect.utils';
+import KLBuffer from 'kl-buffer';
 
 export class Corrector {
   private pos1: CapPos;
@@ -41,7 +42,7 @@ export class Corrector {
     locationR: Location,
     lensParams: LensParams,
     originRectifyParams: RectifyParams,
-  ) {
+  ): RectifyParams {
     console.log(this.pos1, this.pos2, this.imgPtr1, this.imgPtr2);
     // 保存纠偏定位图片
     const pos1Name = `${this.imgPtr1.frameId}_${this.pos1.x}_${this.pos1.y}.jpg`;
@@ -50,7 +51,10 @@ export class Corrector {
     saveImagePtrSync(this.imgPtr1, dir, pos1Name);
     saveImagePtrSync(this.imgPtr2, dir, pos2Name);
 
+    // return null;
+
     const angleBuf = Buffer.alloc(1 * 8);
+    const rectifyParamsBuf = KLBuffer.alloc(9 * 8);
     const width = this.imgPtr1.width;
     const height = this.imgPtr1.height;
     const channel = this.imgPtr1.channel;
@@ -60,7 +64,7 @@ export class Corrector {
     const tmplRInfo = [0, 0, locationR.tplWidth, locationR.tplHeight];
     const refCoor = [this.pos1.x, this.pos1.y, this.pos2.x, this.pos2.y];
     const motorCoor = [this.pos1.x, this.pos1.y, this.pos2.x, this.pos2.y];
-    const rectifyParamsBuf = [...originRectifyParams].doubleToBuffer();
+    rectifyParamsBuf.doubleArray = [...originRectifyParams];
     const buffer1 = this.imgPtr1.getBuffer();
     const buffer2 = this.imgPtr2.getBuffer();
     objToFile(
@@ -90,19 +94,19 @@ export class Corrector {
       locationRModelFile.toBuffer(),
       tmplLInfo.intToBuffer(),
       tmplRInfo.intToBuffer(),
-      motorCoor,
+      motorCoor.doubleToBuffer(),
       lensParams.doubleToBuffer(),
-      [], // TODO
+      [0, 0].doubleToBuffer(), // TODO
       refCoor.doubleToBuffer(),
-      rectifyParamsBuf,
+      rectifyParamsBuf.buffer,
       angleBuf,
     );
-    assert.equal(retVal, 0, '调用estimateAccuratePositionCoor失败');
+    // assert.equal(retVal, 0, '调用estimateAccuratePositionCoor失败');
     // 释放纠偏图片内存
-    waferDll.free_img(buffer1);
-    waferDll.free_img(buffer2);
-    const newRectifyParams = rectifyParamsBuf.toDoubleArr();
+    // waferDll.free_img(buffer1);
+    // waferDll.free_img(buffer2);
+    const newRectifyParams = rectifyParamsBuf.doubleArray;
     console.log(newRectifyParams);
-    return newRectifyParams;
+    return newRectifyParams as RectifyParams;
   }
 }

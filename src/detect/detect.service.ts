@@ -286,15 +286,13 @@ export class DetectService {
       this.corrector.setPos2(pos2);
       this.corrector.setImg2(img2Ptr);
       // TODO 2.4. 调用纠偏接口
-      this.corrector.correct(
+      const newRectifyParams = this.corrector.correct(
         this.materialBO.recipeBO.locationL,
         this.materialBO.recipeBO.locationR,
         this.materialBO.lensParams,
         this.materialBO.getRectifyParams(),
       );
-      const correctionXY = { x: 0, y: 0 };
-      // 2.5. 执行纠偏运动
-      await this.moveToXY(correctionXY);
+      this.materialBO.setRectifyParams(newRectifyParams);
       // 3. 切换到检测状态
       this.detectStatus = DetectStatus.DETECTING;
       // 3.1. 下发拍照点位
@@ -504,7 +502,7 @@ export class DetectService {
     const moveParam = {
       axisInfoList: [
         {
-          axisNum: 4,
+          axisNum: 3,
           speed: 30,
           dest: z,
           isRelative: false,
