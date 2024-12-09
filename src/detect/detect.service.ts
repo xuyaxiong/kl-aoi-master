@@ -123,7 +123,10 @@ export class DetectService {
       this.recipeId,
       this.lensParams,
     );
-    this.corrector = new Corrector(this.materialBO.outputPath);
+    this.corrector = new Corrector(
+      this.materialBO.outputPath,
+      this.materialBO.recipeBO.recipePath,
+    );
     this.detectInfoQueue = new DetectInfoQueue(
       this.materialBO.recipeBO.detectCfgSeq,
       this.materialBO.outputPath,
@@ -225,7 +228,7 @@ export class DetectService {
         this.detectedCounter.detectCount.totalImgCnt,
         300,
       );
-    } 
+    }
     this.postMessageToWeb(DetectStage.INCOMING, StageState.END, {
       materialId: this.materialBO.id,
     });
@@ -283,7 +286,12 @@ export class DetectService {
       this.corrector.setPos2(pos2);
       this.corrector.setImg2(img2Ptr);
       // TODO 2.4. 调用纠偏接口
-      this.corrector.correct();
+      this.corrector.correct(
+        this.materialBO.recipeBO.locationL,
+        this.materialBO.recipeBO.locationR,
+        this.materialBO.lensParams,
+        this.materialBO.getRectifyParams(),
+      );
       const correctionXY = { x: 0, y: 0 };
       // 2.5. 执行纠偏运动
       await this.moveToXY(correctionXY);
