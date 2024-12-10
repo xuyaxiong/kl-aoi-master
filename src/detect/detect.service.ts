@@ -293,8 +293,9 @@ export class DetectService {
       const capPosList = transOrigDotListToCapPosList(
         this.materialBO.recipeBO.dotList,
         this.materialBO.lensParams,
-        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        this.materialBO.getRectifyParams(),
       );
+      objToFile({ capPosList }, this.materialBO.outputPath, 'origDotList.json');
       await this.plcService.capPos({
         capPosList,
         sliceSize: 100,
