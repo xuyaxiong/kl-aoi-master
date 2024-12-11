@@ -76,6 +76,7 @@ export class DetectService {
   private detectInfoQueue: DetectInfoQueue;
   private detectedCounter: DetectedCounter;
   private currImgCnt: number;
+  private reportDotList: ReportPos[];
   private materialBO: MaterialBO;
   private corrector: Corrector;
   private measureRemoteCfg: MeasureRemoteCfg;
@@ -118,6 +119,7 @@ export class DetectService {
 
   private async _start() {
     // TODO 传入实际sn
+    this.reportDotList = [];
     this.materialBO = await this.initMaterialBO(
       null,
       this.recipeId,
@@ -151,6 +153,12 @@ export class DetectService {
       totalPointCnt,
       detectCount,
       async () => {
+        // 导出上报坐标
+        objToFile(
+          this.reportDotList,
+          this.materialBO.outputPath,
+          'reportDotList.json',
+        );
         // 原始测量结果去重
         const dedupMeasureDataList = deDupMeasureDataList(this.measureRawList);
         console.log('去重前测量结果:', this.measureRawList.length);
@@ -301,7 +309,11 @@ export class DetectService {
         this.materialBO.lensParams,
         this.materialBO.getRectifyParams(),
       );
-      objToFile({ capPosList }, this.materialBO.outputPath, 'origDotList.json');
+      const origDotList = capPosList.map((item, idx) => {
+        item['idx'] = idx;
+        return item;
+      });
+      objToFile({ origDotList }, this.materialBO.outputPath, 'origDotList.json');
       await this.plcService.capPos({
         capPosList,
         sliceSize: 100,
@@ -451,6 +463,7 @@ export class DetectService {
         const reportPos = parseReportPos(data);
         console.log('点位上报:', reportPos);
         this.detectInfoQueue.addPos(reportPos);
+        this.reportDotList.push(reportPos);
       } else if (modNum === 4 && insNum === 5) {
         const status = data[7];
         if (status === 2) {
