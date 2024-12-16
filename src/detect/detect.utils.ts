@@ -311,6 +311,9 @@ export function exportMergedDataList(
     }
   };
 
+  // 统计
+  let totalDefectNum = 0;
+  let totalChipNum = 0;
   for (const mergedData of mergedDataList) {
     const { R, C, chipList } = mergedData;
     for (const [idx, chip] of chipList.entries()) {
@@ -318,6 +321,8 @@ export function exportMergedDataList(
       rows.push(
         `${R + 1},${C + 1},${idx + 1},${chip.types},${chip.dx},${chip.dy},${chip.dr}\n`,
       );
+      if (chip.types) totalDefectNum++;
+      totalChipNum++;
       count++;
       if (count >= limit) {
         writeToFile();
@@ -327,4 +332,5 @@ export function exportMergedDataList(
   }
 
   writeToFile(); // 写入最后的剩余数据
+  return { totalDefectNum, totalChipNum };
 }

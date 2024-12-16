@@ -12,16 +12,20 @@ export default class Utils {
     }
   }
 
-  public static figText(text: string, width: number = 100) {
-    console.log(
-      chalk.green(
-        figlet.textSync(text, {
-          horizontalLayout: 'default',
-          verticalLayout: 'default',
-          width,
-        }),
-      ),
-    );
+  public static figError(text: string, width: number = 100) {
+    console.log(chalk.red(Utils._figlet(text, width)));
+  }
+
+  public static figInfo(text: string, width: number = 100) {
+    console.log(chalk.green(Utils._figlet(text, width)));
+  }
+
+  private static _figlet(text: string, width: number) {
+    return figlet.textSync(text, {
+      horizontalLayout: 'default',
+      verticalLayout: 'default',
+      width,
+    });
   }
 
   public static genRandomStr(length = 10) {

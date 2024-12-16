@@ -60,8 +60,8 @@ const mockConfig = {
     97.62309649051184, 39.097581530875374, 67.59953956054554, 69.13360770067247,
     -0.0031858581209718295, 0.006539127039388859,
   ],
-  measureChipModelFile: 'chip2.ncc;',
-  measurePadModelFile: 'chip2.ncc;',
+  measureChipModelFile: 'pad1.ncc',
+  measurePadModelFile: 'pad1.ncc',
   mapImgPath: 'map.png',
 };
 

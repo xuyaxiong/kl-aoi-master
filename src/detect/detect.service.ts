@@ -81,7 +81,9 @@ export class DetectService {
   private corrector: Corrector;
   private measureRemoteCfg: MeasureRemoteCfg;
   private anomalyRemoteCfg: AnomalyRemoteCfg;
-  private detectStatus: DetectStatus = DetectStatus.IDLE;
+  private detectStatus: DetectStatus = MOCK_OPEN
+    ? DetectStatus.DETECTING
+    : DetectStatus.IDLE;
 
   private baseRecipePath: string;
   private width: number;
@@ -115,6 +117,14 @@ export class DetectService {
     this.recipeId = recipeId;
     this.cameraService.setGrabMode('external'); // 相机设置为外触发模式
     this.lensParams = await this.getLensParams();
+    if (MOCK_OPEN) {
+      await this._start();
+      mockImgSeqGenerator(
+        this.eventEmitter,
+        this.detectedCounter.detectCount.totalImgCnt,
+        300,
+      );
+    }
   }
 
   private async _start() {
@@ -194,8 +204,11 @@ export class DetectService {
           dedupAnomalyDataList,
           dedupMeasureDataList,
         );
-        exportMergedDataList(this.materialBO.dataOutputPath, mergedDataList);
-
+        const statistics = exportMergedDataList(
+          this.materialBO.dataOutputPath,
+          mergedDataList,
+        );
+        console.log('statistics:', statistics);
         // 截取外观缺陷小图
         await capAnomalyDefectImgs(
           this.detectInfoQueue.imageInfoMap,
@@ -226,17 +239,11 @@ export class DetectService {
 
         this.postMessageToWeb(DetectStage.OUTING, StageState.END, {
           matierialId: this.materialBO.id,
+          ...statistics,
         });
       },
     );
 
-    if (MOCK_OPEN) {
-      mockImgSeqGenerator(
-        this.eventEmitter,
-        this.detectedCounter.detectCount.totalImgCnt,
-        300,
-      );
-    }
     this.postMessageToWeb(DetectStage.INCOMING, StageState.END, {
       materialId: this.materialBO.id,
     });
@@ -313,7 +320,11 @@ export class DetectService {
         item['idx'] = idx;
         return item;
       });
-      objToFile({ origDotList }, this.materialBO.outputPath, 'origDotList.json');
+      objToFile(
+        { origDotList },
+        this.materialBO.outputPath,
+        'origDotList.json',
+      );
       await this.plcService.capPos({
         capPosList,
         sliceSize: 100,
@@ -412,7 +423,7 @@ export class DetectService {
             // 送测量
             const measureParam: MeasureParam = {
               fno,
-              imagePath: imgPath.replace('D:\\kl-storage\\', 'X:\\'),
+              imagePath: this.getFilePath(imgPath),
               imageSize: {
                 width: this.materialBO.imgInfo.width,
                 height: this.materialBO.imgInfo.height,
@@ -422,15 +433,12 @@ export class DetectService {
               lensParams: this.materialBO.lensParams,
               mappingParams: this.materialBO.recipeBO.mappingParams,
               rectifyParams: this.materialBO.getRectifyParams(),
-              modelPath: this.materialBO.recipeBO.measureChipModelFile.replace(
-                'D:\\kl-storage\\',
-                'X:\\',
+              modelPath: this.getFilePath(
+                this.materialBO.recipeBO.measureChipModelFile,
               ),
-              padModelPath:
-                this.materialBO.recipeBO.measurePadModelFile.replace(
-                  'D:\\kl-storage\\',
-                  'X:\\',
-                ),
+              padModelPath: this.getFilePath(
+                this.materialBO.recipeBO.measurePadModelFile,
+              ),
               chipNum: this.materialBO.recipeBO.chipNum,
               chipSize: this.materialBO.recipeBO.chipSize,
               roiCornerPoint: this.materialBO.recipeBO.roiCornerPoint,
@@ -452,6 +460,14 @@ export class DetectService {
     }
   }
 
+  private getFilePath(filePath: string) {
+    if (MOCK_OPEN) {
+      return filePath;
+    } else {
+      return filePath.replace('D:\\kl-storage\\', 'X:\\');
+    }
+  }
+
   // 处理上报数据
   private setReportDataHandler() {
     this.plcService.setReportDataHandler(async (reportData: ReportData) => {
@@ -467,7 +483,7 @@ export class DetectService {
       } else if (modNum === 4 && insNum === 5) {
         const status = data[7];
         if (status === 2) {
-          console.log('receive start signal');
+          Utils.figInfo('Got Start Signal');
           await this._start();
           this.eventEmitter.emit(`startCorrection`);
         }
@@ -578,6 +594,7 @@ export class DetectService {
       return data;
     } catch (error) {
       this.logger.error(`${error.message}`);
+      Utils.figError('MEASURE ERR');
       return [];
     }
   }
@@ -599,6 +616,8 @@ export class DetectService {
       return data;
     } catch (error) {
       this.logger.error(`${error.message}`);
+      Utils.figError('ANOMALY ERR');
+
       return {
         flawList: [],
         anomalyList: [],

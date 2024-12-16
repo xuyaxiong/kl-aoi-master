@@ -37,7 +37,7 @@ export class DetectedCounter {
   }
 
   private afterDetectDone() {
-    Utils.figText('DETECT DONE');
+    Utils.figInfo('DETECT DONE');
     console.log(`检测耗时: ${(Date.now() - this.startTime) / 1000}s`);
     this.callback?.();
   }
