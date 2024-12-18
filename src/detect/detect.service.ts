@@ -394,11 +394,15 @@ export class DetectService {
               anomalyParam,
             );
             // TODO anomalyList 传递给前端
-            // this.postMessageToWeb(DetectStage.DETECT_PROGRESS_ANOMALY_DONE, {
-            //   materialId: this.materialBO.id,
-            //   patternId,
-            //   flaws: anomalyList,
-            // });
+            // this.postMessageToWeb(
+            //   DetectStage.DETECT_PROGRESS_ANOMALY_DONE,
+            //   StageState.END,
+            //   {
+            //     materialId: this.materialBO.id,
+            //     patternId,
+            //     flaws: anomalyList,
+            //   },
+            // );
             // flawList 插入数据库
             this.insertFlaws(patternId, cntPerLightType, flawList);
             // 保存外观缺陷小图信息
@@ -655,6 +659,13 @@ export class DetectService {
   }
 
   private async getLensParams() {
+    if (MOCK_OPEN)
+      return [
+        2560, 2560, -0.0005041561895677955, -2.624267773850234e-7,
+        9.475674094265883e-7, -6.506838968108795e-7, 0.0005042270233878636,
+        -2.6541447767978505e-7, -2.1965531138071474e-7, 1.8761998416316002e-7,
+        1, 0, 0,
+      ];
     const dictItem = await this.sysDictService.getDictItemByCode({
       typeCode: 'SYS_CAM_CFG',
       code: 'lensParams',

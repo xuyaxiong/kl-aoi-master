@@ -52,7 +52,11 @@ const mockConfig = {
     //   enableMeasure: false,
     // },
   ],
-  roiDotList: [20, 20, 30, 30],
+  roiDotList: [
+    20, 20, 30, 30, 20, 20, 30, 30, 20, 20, 30, 30, 20, 20, 30, 30, 20, 20, 30,
+    30, 20, 20, 30, 30, 20, 20, 30, 30, 20, 20, 30, 30, 20, 20, 30, 30, 20, 20,
+    30, 30, 20, 20, 30, 30,
+  ],
   chipMeasureX: [-1.5, 1.5],
   chipMeasureY: [-1.5, 1.5],
   chipMeasureR: [-1.5, 1.5],
@@ -60,7 +64,7 @@ const mockConfig = {
     97.62309649051184, 39.097581530875374, 67.59953956054554, 69.13360770067247,
     -0.0031858581209718295, 0.006539127039388859,
   ],
-  measureChipModelFile: 'pad1.ncc',
+  measureChipModelFile: 'chip1.ncc',
   measurePadModelFile: 'pad1.ncc',
   mapImgPath: 'map.png',
 };
