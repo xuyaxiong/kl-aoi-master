@@ -1,10 +1,10 @@
-export interface publishData {
+export interface PublishData {
   event: string;
   state: string;
   info: object;
 }
 
-export interface subscribeData {
+export interface SubscribeData {
   channel: string;
   data: object;
 }

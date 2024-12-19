@@ -6,7 +6,18 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { publishData, subscribeData } from './ws.bo';
+import { PublishData, SubscribeData } from './ws.bo';
+import { Logger } from '@nestjs/common';
+
+interface ServiceInfo {
+  event: string;
+  serviceName: string;
+}
+
+enum ServiceStatus {
+  ONLINE = 0,
+  OFFLINE = 1,
+}
 
 @WebSocketGateway(9000, {
   transports: ['websocket', 'polling', 'jsonp-polling'],
@@ -17,31 +28,61 @@ import { publishData, subscribeData } from './ws.bo';
   },
 })
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  private readonly logger = new Logger(WsGateway.name);
   @WebSocketServer() server: Server;
+  private connectedServices = new Map<string, ServiceInfo>();
+  private customerClient = '';
 
   handleConnection(client: Socket, ...args: any[]): void {
-    console.log(`Client ${client.id} connected`);
+    const { clientType } = client.handshake.query;
+    if (clientType !== 'service') {
+      this.customerClient = client.id;
+    }
   }
 
   handleDisconnect(client: Socket): void {
-    console.log(`Client ${client.id} disconnected`);
+    if (this.connectedServices.has(client.id)) {
+      const { event, serviceName } = this.connectedServices.get(client.id);
+      this.logger.error(`${serviceName}离线`);
+      this.server.to(this.customerClient).emit('ServiceState', [
+        {
+          event,
+          name: serviceName,
+          state: ServiceStatus.OFFLINE,
+        },
+      ]);
+    }
+    this.connectedServices.delete(client.id);
+  }
+
+  @SubscribeMessage('healthCheck')
+  handleJoinRoom(
+    client: Socket,
+    payload: { event: string; serviceName: string },
+  ) {
+    const { event, serviceName } = payload;
+    this.connectedServices.set(client.id, { event, serviceName });
+    this.logger.log(`${serviceName}上线`);
+    this.server.to(this.customerClient).emit('ServiceState', [
+      {
+        event,
+        name: serviceName,
+        state: ServiceStatus.ONLINE,
+      },
+    ]);
   }
 
   @SubscribeMessage('subscribe')
-  handleSubscribe(client: Socket, data: subscribeData): void {
+  handleSubscribe(client: Socket, data: SubscribeData): void {
     console.log(`Client ${client.id} subscribed to ${JSON.stringify(data)}`);
   }
 
   @SubscribeMessage('unsubscribe')
-  handleUnsubscribe(client: Socket, data: subscribeData): void {
+  handleUnsubscribe(client: Socket, data: SubscribeData): void {
     console.log(`Client ${client.id} unsubscribed from ${data.channel}`);
   }
 
-  public publish(event: string, data: publishData): void {
+  public publish(event: string, data: PublishData): void {
     this.server.emit(event, data);
-  }
-
-  public to(channel: string, event: string, data: publishData): void {
-    this.server.to(channel).emit(event, data);
   }
 }
