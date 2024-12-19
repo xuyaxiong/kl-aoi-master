@@ -10,6 +10,7 @@ import {
 } from './types';
 import { saveImagePtrSync } from '../../utils/image_utils';
 import Utils from '../../utils/Utils';
+import waferDll from '../../wrapper/wafer';
 
 export class DetectInfoQueue {
   private imgCnt = 0;
@@ -87,5 +88,13 @@ export class DetectInfoQueue {
       return tmpDetectInfoList;
     }
     return null;
+  }
+
+  // 释放检测图片
+  public freeImgInfoMap() {
+    for (const [idx, imgInfo] of this.imageInfoMap.entries()) {
+      const buffer = imgInfo.imagePtr.getBuffer();
+      waferDll.free_img(buffer);
+    }
   }
 }

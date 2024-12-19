@@ -1,4 +1,5 @@
 const path = require('path');
+import KLBuffer from 'kl-buffer';
 const assert = require('assert');
 import { ImagePtr } from '../../camera/camera.bo';
 import { CapPos } from '../../plc/plc.bo';
@@ -8,7 +9,6 @@ import waferDll from '../../wrapper/wafer';
 import { Location } from './types';
 import '../../extension';
 import { objToFile } from '../detect.utils';
-import KLBuffer from 'kl-buffer';
 
 export class Corrector {
   private pos1: CapPos;
@@ -50,8 +50,6 @@ export class Corrector {
     const dir = path.join(this.outputPath, 'correction');
     saveImagePtrSync(this.imgPtr1, dir, pos1Name);
     saveImagePtrSync(this.imgPtr2, dir, pos2Name);
-
-    // return null;
 
     const angleBuf = Buffer.alloc(1 * 8);
     const rectifyParamsBuf = KLBuffer.alloc(9 * 8);
@@ -103,10 +101,8 @@ export class Corrector {
     );
     // assert.equal(retVal, 0, '调用estimateAccuratePositionCoor失败');
     // 释放纠偏图片内存
-    // waferDll.free_img(buffer1);
-    // waferDll.free_img(buffer2);
-    const newRectifyParams = rectifyParamsBuf.doubleArray;
-    console.log(newRectifyParams);
-    return newRectifyParams as RectifyParams;
+    waferDll.free_img(buffer1);
+    waferDll.free_img(buffer2);
+    return rectifyParamsBuf.doubleArray as RectifyParams;
   }
 }

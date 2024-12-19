@@ -58,7 +58,7 @@ import {
 import { MaterialService } from '../db/material/material.service';
 import AppConfig from '../app.config';
 import { SysDictService } from './../db/dict/SysDict.service';
-import Utils from 'src/utils/Utils';
+import Utils from '../utils/Utils';
 import { WsGateway } from '../ws/ws.gateway';
 
 enum DetectStatus {
@@ -233,6 +233,9 @@ export class DetectService {
           this.materialBO.recipeBO.chipSize,
           this.materialBO.measureDefectCapImgPath,
         );
+
+        // 释放检测图片
+        this.detectInfoQueue.freeImgInfoMap();
 
         // ! 插入material
         this.materialService.create(this.materialBO.mapToMaterial());
