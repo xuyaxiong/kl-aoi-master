@@ -634,7 +634,7 @@ export class DetectService {
   }
 
   private postMessageToWeb(stage: string, state: string, data: object) {
-    this.ws.publish('progress', {
+    this.ws.publishToWebClient('progress', {
       event: stage,
       state: state,
       info: data,
