@@ -509,6 +509,7 @@ export class DetectService {
       recipe.name,
       this.baseRecipePath,
       recipe.config,
+      MOCK_OPEN,
     );
     return new MaterialBO(sn, recipeBO, lensParams);
   }
