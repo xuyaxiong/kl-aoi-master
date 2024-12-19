@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as fs from 'fs';
 import { spawn } from 'child_process';
+import { cwd } from 'node:process';
 const path = require('path');
 import { LoggingInterceptor } from './interceptor/logging.interceptor';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -54,7 +55,8 @@ function dllDump(port: number) {
   const crashDir = AppConfig.CRASH_DUMP_DIR;
   fs.mkdirSync(crashDir, { recursive: true });
   const crashPath = path.join(crashDir, `${Date.now()}.dmp`);
-  let procdumpPath = path.join(__dirname, 'procdump.exe');
+  const PKG_FLAG = process.env.PKG?.trim();
+  let procdumpPath = path.join(PKG_FLAG ? __dirname : cwd(), 'procdump.exe');
   const procdump = spawn(procdumpPath, [
     '-accepteula',
     '-e',
