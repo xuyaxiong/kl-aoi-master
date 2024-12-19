@@ -166,7 +166,7 @@ export class DetectService {
         // 导出上报坐标
         objToFile(
           this.reportDotList,
-          this.materialBO.outputPath,
+          path.join(this.materialBO.outputPath, 'dotList'),
           'reportDotList.json',
         );
         // 原始测量结果去重
@@ -325,7 +325,7 @@ export class DetectService {
       });
       objToFile(
         { origDotList },
-        this.materialBO.outputPath,
+        path.join(this.materialBO.outputPath, 'dotList'),
         'origDotList.json',
       );
       await this.plcService.capPos({
