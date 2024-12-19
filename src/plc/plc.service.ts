@@ -19,7 +19,7 @@ import {
   CapPosParam,
 } from './plc.param';
 import { ConfigService } from '@nestjs/config';
-import { CapPos, PlcTcpConfig } from './plc.bo';
+import { CapPos, PlcStatus, PlcTcpConfig } from './plc.bo';
 import {
   CapPosIns,
   InitPlcIns,
@@ -28,19 +28,41 @@ import {
   TakePhotoIns,
 } from './plc.ins';
 import AppConfig from '../app.config';
+import { WsGateway } from '../ws/ws.gateway';
 
 @Injectable()
 export class PlcService {
   private client: ClientProxy;
   private plcTcpConfig: PlcTcpConfig;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private ws: WsGateway,
+  ) {
     this.plcTcpConfig = AppConfig.plcTcpConfig;
     this.client = new ClientProxy(
       this.plcTcpConfig.name,
       this.plcTcpConfig.host,
       this.plcTcpConfig.port,
     );
+    this.client.setOnSuccess(() => {
+      this.ws.publishToWebClient('DeviceState', [
+        {
+          event: 'PLC',
+          name: 'PLC',
+          state: PlcStatus.ONLINE,
+        },
+      ]);
+    });
+    this.client.setOnFailed(() => {
+      this.ws.publishToWebClient('DeviceState', [
+        {
+          event: 'PLC',
+          name: 'PLC',
+          state: PlcStatus.OFFLINE,
+        },
+      ]);
+    });
     this.client.connect();
   }
 

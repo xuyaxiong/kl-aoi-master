@@ -8,3 +8,8 @@ export interface CapPos {
   x: number;
   y: number;
 }
+
+export enum PlcStatus {
+  ONLINE = 0,
+  OFFLINE = 1,
+}

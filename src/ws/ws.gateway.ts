@@ -82,7 +82,11 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client ${client.id} unsubscribed from ${data.channel}`);
   }
 
-  public publish(event: string, data: PublishData): void {
-    this.server.emit(event, data);
+  public publishToWebClient(
+    event: string,
+    data: PublishData | PublishData[],
+  ): void {
+    if (!this.customerClient) return;
+    this.server.to(this.customerClient).emit(event, data);
   }
 }
